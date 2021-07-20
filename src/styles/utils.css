@@ -1,0 +1,83 @@
+.vec-chevron_down {
+  position: relative;
+
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+}
+
+.vec-chevron_down:after {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+
+  box-sizing: border-box;
+  width: 8px;
+  height: 8px;
+
+  content: '';
+  transform: rotate(45deg);
+
+  border-color: currentColor;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+
+.vec-chevron_up {
+  position: relative;
+
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+}
+
+.vec-chevron_up:after {
+  position: absolute;
+  bottom: 5px;
+  left: 6px;
+
+  display: block;
+
+  box-sizing: border-box;
+  width: 8px;
+  height: 8px;
+
+  content: '';
+  transform: rotate(-45deg);
+
+  border-color: currentColor;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.vec-chevron_l {
+  position: relative;
+
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+}
+
+.vec-chevron_l:after {
+  position: absolute;
+  top: 9px;
+  left: 10px;
+
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+
+  content: '';
+  transition: transform 0.2s;
+  transform: rotate(45deg);
+
+  border-color: currentColor;
+  border-top: 4px solid;
+  border-right: 4px solid;
+}
+
+.vec-chevron_l-left:after {
+  left: 20px;
+
+  transform: rotate(-135deg);
+}

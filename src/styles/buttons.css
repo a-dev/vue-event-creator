@@ -1,0 +1,26 @@
+.vec-button {
+  min-width: 70px;
+  padding: 5px 12px 4px;
+
+  cursor: pointer;
+
+  color: var(--vec-color-white);
+  border: 2px solid var(--vec-color-transparent);
+  border-radius: 3px;
+  outline-color: var(--vec-color-secondary);
+
+  font-size: var(--vec-fs-xs);
+}
+
+.vec-button_outline {
+  color: var(--vec-color-text-secondary);
+  border-color: var(--vec-color-text-tertiary);
+}
+
+.vec-button_primary-bg {
+  background-color: var(--vec-color-primary);
+}
+
+.vec-button_danger-bg {
+  background-color: var(--vec-color-warning);
+}

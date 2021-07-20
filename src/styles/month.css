@@ -1,0 +1,28 @@
+.vec-month {
+  margin: 30px 20px 30px 17.5px;
+}
+
+.vec-month__title {
+  margin: 10px 7px;
+
+  color: var(--vec-color-text-primary);
+
+  font-size: var(--vec-fs-xs);
+  font-weight: 600;
+}
+
+.vec-month__days {
+  display: grid;
+  justify-content: center;
+
+  width: 100%;
+
+  grid-template-columns: repeat(7, 30px);
+  grid-auto-rows: 30px;
+  row-gap: 3px;
+  column-gap: 4px;
+}
+
+.vec-month__days .vec-day:first-child {
+  grid-column-start: var(--vec-month-first-day-shift, 0);
+}

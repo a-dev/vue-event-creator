@@ -1,0 +1,55 @@
+.vec-events-default-time {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  margin-bottom: 30px;
+  padding: 10px 15px 14px 15px;
+
+  border-radius: 3px;
+  background-color: var(--vec-color-gray-light);
+
+  font-size: var(--vec-fs-s);
+}
+
+.vec-events-dt__title {
+  width: 100%;
+}
+
+.vec-events-dt__inputs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  margin-top: 10px;
+
+  color: var(--vec-color-text-secondary);
+}
+
+.vec-events-dt__input:last-of-type {
+  margin-right: 12px;
+}
+
+.vec-event__time-input {
+  margin-right: 5px;
+  padding: 3px 5px 3px 10px;
+
+  text-align: center;
+
+  color: var(--vec-color-text-primary);
+  border: 1px solid var(--vec-color-gray-light);
+  border-radius: 3px;
+  outline-color: var(--vec-color-secondary);
+  background-color: var(--vec-color-white);
+
+  font-size: var(--vec-fs-xs);
+}
+
+.vec-events-dt__prompt {
+  width: 100%;
+  margin: 7px 0 0 0;
+
+  color: var(--vec-color-text-secondary);
+
+  font-size: var(--vec-fs-xxs);
+}

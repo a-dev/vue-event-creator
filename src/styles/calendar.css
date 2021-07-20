@@ -1,0 +1,71 @@
+.vec-calendar__header {
+  position: sticky;
+  z-index: var(--vec-z-index-calendar);
+  top: 0;
+
+  min-width: 280px;
+}
+
+.vec-calendar {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 420px;
+  max-height: var(--vec-calendar-max-height);
+
+  border: 1px solid var(--vec-color-gray-light);
+  border-radius: 3px;
+
+  justify-self: center;
+}
+
+.vec-calendar__weekdays {
+  display: grid;
+  justify-content: center;
+
+  width: 100%;
+  padding: 3px 0;
+
+  background-color: var(--vec-color-gray-light);
+
+  grid-template-columns: repeat(7, 30px);
+  grid-auto-rows: 30px;
+  row-gap: 6px;
+  column-gap: 4px;
+}
+
+.vec-calendar__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--vec-color-text-secondary);
+
+  font-size: var(--vec-fs-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.vec-months__shift {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  margin: 0;
+  padding: 7px 20px 5px;
+
+  cursor: pointer;
+  transition: opacity 0.25s;
+  text-align: center;
+  vertical-align: middle;
+
+  color: var(--vec-color-text-secondary);
+  border: none;
+  background-color: var(--vec-color-tertiaty);
+}
+
+@media (hover: hover) {
+  .vec-months__shift:hover {
+    opacity: 0.9;
+  }
+}

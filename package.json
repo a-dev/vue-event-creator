@@ -1,0 +1,64 @@
+{
+  "version": "0.0.0",
+  "name": "vue-event-creator",
+  "description": "Vue 3 library for admin interfaces: easy way to schedule events in the calendar",
+  "license": "MIT",
+  "author": "Andrey Dementev <andytev@gmail.com>",
+  "main": "./dist/vue-event-creator.js",
+  "types": "./src/types.d.ts",
+  "module": "./dist/vue-event-creator.esm.js",
+  "unpkg": "./dist/vue-event-creator.min.js",
+  "style": "./dist/styles.css",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/a-dev/vue-event-creator"
+  },
+  "homepage": "https://github.com/a-dev/vue-event-creator/demo-app/",
+  "bugs": {
+    "url": "https://github.com/a-dev/vue-event-creator/issues"
+  },
+  "scripts": {
+    "dev": "vite serve demo/",
+    "build": "rollup --config rollup.config.js",
+    "build:demo": "vue-tsc --noEmit && vite build demo/ --emptyOutDir",
+    "serve": "vite preview demo-app --host",
+    "test": "jest tests/unit --coverage",
+    "release": "release-it"
+  },
+  "dependencies": {
+    "dayjs": "^1.10.6"
+  },
+  "devDependencies": {
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^19.0.1",
+    "@types/jest": "^26.0.24",
+    "@vitejs/plugin-vue": "^1.2.5",
+    "@vue/compiler-sfc": "^3.1.4",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "@vue/test-utils": "^2.0.0-rc.10",
+    "autoprefixer": "^10.3.1",
+    "eslint": "^7.31.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-vue": "^7.14.0",
+    "jest": "^26.6.3",
+    "jest-transform-stub": "^2.0.0",
+    "postcss": "^8.3.5",
+    "release-it": "^14.10.0",
+    "rollup": "^2.53.2",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-postcss": "^4.0.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript": "^1.0.1",
+    "rollup-plugin-vue": "^6.0.0",
+    "ts-jest": "^26.5.6",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.5",
+    "vite": "^2.4.3",
+    "vue": "^3.1.5",
+    "vue-jest": "^5.0.0-alpha.10",
+    "vue-template-compiler": "^2.6.14",
+    "vue-tsc": "^0.0.24"
+  }
+}

@@ -1,0 +1,72 @@
+.vec-day {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+
+  color: var(--vec-color-text-secondary);
+  border: 2px solid var(--vec-color-transparent);
+  border-radius: 50%;
+
+  font-size: var(--vec-fs-xs);
+  line-height: 1;
+}
+
+.vec-day_weekend {
+  color: var(--vec-color-warning);
+}
+
+.vec-day_scheduled {
+  color: var(--vec-color-white);
+  background-color: var(--vec-color-primary);
+}
+
+.vec-day_choosing {
+  border-color: var(--vec-color-primary);
+}
+
+.vec-day_number {
+  position: relative;
+}
+
+.vec-day_scheduled + .vec-day_scheduled:not(.vec-day_start-day):before {
+  position: absolute;
+  top: 10px;
+  left: -8px;
+
+  width: 8px;
+  height: 6px;
+
+  content: '';
+
+  background-color: var(--vec-color-primary);
+}
+
+.vec-day_scheduled.vec-day_editing
+  + .vec-day_scheduled:not(.vec-day_start-day):before {
+  background-color: var(--vec-color-warning);
+}
+
+.vec-day_scheduled.vec-day_focused:not(.vec-day_editing)
+  + .vec-day_scheduled:not(.vec-day_start-day):before {
+  background-color: var(--vec-color-secondary);
+}
+
+.vec-day_focused {
+  border-color: var(--vec-color-secondary);
+}
+
+.vec-day_editing {
+  color: var(--vec-color-white);
+  border-color: var(--vec-color-warning);
+  background-color: var(--vec-color-warning);
+}
