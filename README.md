@@ -32,7 +32,7 @@ npm install vue-event-creator
 ```
 yarn
 ```
-yarn add vue-event creator
+yarn add vue-event-creator
 ```
 
 ## Using
@@ -55,6 +55,8 @@ Component with initialization and server's actions:
 </template>
 <script>
 import VueEventCreator from 'vue-event-creator';
+import 'vue-event-creator/dist/styles.css'; // CSS
+
 import EventDataComponent from './EventDataComponent.vue'; // The component with additional data (*optional)
 import axios from 'axios'; // For example I use axios for sending data to a server
 
