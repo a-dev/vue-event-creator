@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "name": "vue-event-creator",
-  "description": "Vue 3 library for admin interfaces: easy way to schedule events in the calendar",
+  "description": "Vue.js library for an admin interface: easy way to schedule events in the calendar",
   "license": "MIT",
   "author": "Andrey Dementev <andytev@gmail.com>",
   "main": "./dist/vue-event-creator.js",

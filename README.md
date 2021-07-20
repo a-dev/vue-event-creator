@@ -16,13 +16,14 @@ Small size: less than 11 kb (gzip with styles)
 
 ## Demo
 
-Check [out demo](https://a-dev.github.io/vue-event-creator/).
+### [Check out demo](https://a-dev.github.io/vue-event-creator/)
+
 To create one-day event you need to make double click on the date. To create the event for several days you make one click on start date and second click on the last date of the event. That's it. The card of new event will appear in the right column.
 
 ## Dependencies
 
-Vue 3
-Dayjs (you don't have to preinstall it)
+* Vue 3
+* Dayjs (you don't have to preinstall it)
 
 ## Installation
 npm
