@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "Andrey Dementev <andytev@gmail.com>",
   "main": "./dist/vue-event-creator.js",
-  "types": "./src/types.d.ts",
+  "types": "./src/index.d.ts",
   "module": "./dist/vue-event-creator.esm.js",
   "unpkg": "./dist/vue-event-creator.min.js",
   "style": "./dist/styles.css",
@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/a-dev/vue-event-creator"
   },
-  "homepage": "https://github.com/a-dev/vue-event-creator/demo-app/",
+  "homepage": "https://a-dev.github.io/vue-event-creator/",
   "bugs": {
     "url": "https://github.com/a-dev/vue-event-creator/issues"
   },
