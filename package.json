@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "vue-event-creator",
   "description": "Vue.js library for an admin interface: easy way to schedule events in the calendar",
   "license": "MIT",
