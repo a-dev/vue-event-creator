@@ -6,17 +6,17 @@ By the way, you can customize the dates of event and add to them additional prop
 
 ## Features
 
-Localization: English, Espanol, Русский, custom.
-Two columns view.
-To focus the event card by click.
-Default time control.
-In-place editing of the event additional data.
-Foolproof: user has to save a new event and has to confirm removing an event that already saved through API.
-Small size: less than 11 kb (gzip with styles)
+* Localization: English, Espanol, Русский, custom.
+* Two columns view.
+* To focus the event card by click.
+* Default time control.
+* In-place editing of the event additional data.
+* Foolproof: user has to save a new event and has to confirm removing an event that already saved through API.
+* Small size: less than 11 kb (gzip with styles)
 
 ## Demo
 
-### [Check out demo](https://a-dev.github.io/vue-event-creator/)
+### 👉 [Check out demo](https://a-dev.github.io/vue-event-creator/) 👈
 
 To create one-day event you need to make double click on the date. To create the event for several days you make one click on start date and second click on the last date of the event. That's it. The card of new event will appear in the right column.
 
