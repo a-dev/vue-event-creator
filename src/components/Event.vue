@@ -199,13 +199,16 @@ export default defineComponent({
       } as VecEvent;
       props
         .saveEventFn(event)
-        .then((result: VecEvent & ErrorObj) => {
-          if (result && result.error) {
-            serverError.value = result.error;
-            throw new Error(result.error);
+        .then((updatedEvent: undefined | (VecEvent & ErrorObj)) => {
+          if (updatedEvent && updatedEvent.error) {
+            serverError.value = updatedEvent.error;
+            throw new Error(updatedEvent.error);
           }
 
-          const updatedEvent = result && result.id ? result : event;
+          if (!updatedEvent || !updatedEvent!.id) {
+            throw new Error('Something went wrong: the event was not saved');
+          }
+
           if (
             +updatedEvent.startsAt !== +event.startsAt ||
             +updatedEvent.finishesAt !== +event.finishesAt
@@ -213,7 +216,7 @@ export default defineComponent({
             const formattedDate = (date: Date) => {
               return dayjs(date).format('YYYY-MM-DD, HH:mm');
             };
-            const errorText = `Something goes wrong: dates was changed. Expected: ${formattedDate(
+            const errorText = `Something went wrong: dates was changed. Expected: ${formattedDate(
               event.startsAt
             )} and ${formattedDate(
               event.finishesAt

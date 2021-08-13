@@ -102,9 +102,9 @@ export default {
       formData.set('event[title]', data.data?.title);
       formData.set('event[text]', data.data?.text);
 
-      const isUpdating = !!data.id; // if an event is not saved in a server, than it doesn't have id (id === null).
+      const isUpdating = !!data.id; // if an event is not saved in a server, than it doesn't have the id (id === null).
 
-      axios({
+      return axios({
         url: isUpdating ? `/api/events/${data.id}.json` : '/api/events/create',
         method: isUpdating ? 'patch' : 'post',
         data: formData

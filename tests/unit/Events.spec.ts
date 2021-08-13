@@ -18,7 +18,14 @@ describe('List of events with the default time component: edit & remove', () => 
   const wrapper = mount(Events, {
     props: {
       eventComponent: {},
-      saveEventFn: async (event: VecEvent) => {},
+      saveEventFn: async (event: VecEvent) => {
+        return {
+          id: 100,
+          // 02–05 September 2021, 12:40–18:20
+          startsAt: new Date('2021-09-02T12:40:00.000Z'),
+          finishesAt: new Date('2021-09-05T18:20:00.000Z')
+        };
+      },
       editEventFn: async (event: VecEvent) => {},
       removeEventFn: async (event: VecEvent) => {}
     },

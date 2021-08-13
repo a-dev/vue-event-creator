@@ -29,12 +29,6 @@ const formatDate = (startsAt: Date, finishesAt: Date) => {
   return formattedDate;
 };
 
-const formatTime = (startsAt: Date, finishesAt: Date) => {
-  return (
-    dayjs(startsAt).format('HH:mm') + '–' + dayjs(finishesAt).format('HH:mm')
-  );
-};
-
 const makeEsIdFromStartsAt = (startsAt: Date) => {
   return +dayjs(startsAt).format('YYYYMMDD');
 };
@@ -48,10 +42,4 @@ const setTimeToDate = (date: Date, hm: string) => {
 };
 
 export default dayjs;
-export {
-  setDayJsLang,
-  formatDate,
-  formatTime,
-  setTimeToDate,
-  makeEsIdFromStartsAt
-};
+export { setDayJsLang, formatDate, setTimeToDate, makeEsIdFromStartsAt };

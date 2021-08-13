@@ -66,9 +66,23 @@ describe('Edit, save and remove an event', () => {
   test('Click to button Edit changes state of the event and of the day to editing', async () => {
     const calendarState = July2021CalendarState();
     const wrapper = mount(VECEvent, {
-      props: { ...defaultProps },
+      props: {
+        ...defaultProps,
+        saveEventFn: async (event: VecEvent) => {
+          return {
+            id: 100,
+            // 02–05 September 2021, 10:00–17:00
+            startsAt: new Date('2021-09-02T10:00:00'),
+            finishesAt: new Date('2021-09-05T17:00:00'),
+            data: { title: 'New title', text: 'New text' }
+          };
+        }
+      },
       global: {
-        provide: { ...defaultProvide, calendarState }
+        provide: {
+          ...defaultProvide,
+          calendarState
+        }
       }
     });
 
@@ -147,7 +161,7 @@ describe('Edit, save and remove an event', () => {
   test('Rise and show the error if a date from a server is not the same or invalid', async () => {
     const eventsState = ref(createEventsWithDates(['2021-09-02:2021-09-05']));
     const errorText =
-      'Something goes wrong: dates was changed. Expected: 2021-09-02, 10:00 and 2021-09-05, 17:00. Received: 2021-08-10, 10:00, 2021-09-05, 17:00';
+      'Something went wrong: dates was changed. Expected: 2021-09-02, 10:00 and 2021-09-05, 17:00. Received: 2021-08-10, 10:00, 2021-09-05, 17:00';
     const saveEventFn = async () => {
       return {
         id: 5,
