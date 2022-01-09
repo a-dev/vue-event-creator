@@ -1,9 +1,9 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "vue-event-creator",
-  "description": "Vue.js library for an admin interface: easy way to schedule events in the calendar",
+  "description": "Vue.js library for an admin interface: easy way to schedule events in the calendar",
   "license": "MIT",
-  "author": "Andrey Dementev <andytev@gmail.com>",
+  "author": "@a-dev <andytev@gmail.com>",
   "main": "./dist/vue-event-creator.js",
   "types": "./src/index.d.ts",
   "module": "./dist/vue-event-creator.esm.js",
@@ -29,8 +29,7 @@
     "build": "rollup --config rollup.config.js",
     "build:demo": "vue-tsc --noEmit && vite build demo/ --emptyOutDir",
     "serve": "vite preview demo-app --host",
-    "test": "jest tests/unit --coverage",
-    "release": "release-it"
+    "test": "jest tests/unit --coverage"
   },
   "dependencies": {
     "dayjs": "^1.10.7"
