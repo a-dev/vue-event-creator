@@ -22,3 +22,5 @@ coverage
 
 .vscode/
 .history/
+
+dist/
