@@ -6,7 +6,6 @@ import {
   VecDefaultTime,
   VecDayOptions
 } from '../index';
-import { inject } from 'vue';
 import dayjs from '../lib/dayjs';
 import {
   removeEventFromCalendar,
@@ -65,7 +64,8 @@ export function useEventActions(
   };
 
   const updateEventInTheState = (event: VecEvent, options: any) => {
-    const ctxEvent = eventsState.value.find((e) => e.es_id === event.es_id);
+    const ctxEvent: VecEvent | {} =
+      eventsState.value.find((e) => e.es_id === event.es_id) ?? {};
     Object.assign(ctxEvent, { ...event, ...options });
   };
 

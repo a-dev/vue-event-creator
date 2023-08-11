@@ -3,27 +3,18 @@
     <div class="vec-loader"></div>
   </div>
   <div v-else class="vec-body">
-    <div
-      class="vec-calendar__switcher"
-      :class="{ 'vec-calendar__switcher_on': isSwitcherOn }"
-      @click="isSwitcherOn = !isSwitcherOn"
-    >
-      <div
-        class="vec-chevron_l"
-        :class="{ 'vec-chevron_l-left': isSwitcherOn }"
-      ></div>
+    <div class="vec-calendar__switcher" :class="{ 'vec-calendar__switcher_on': isSwitcherOn }"
+      @click="isSwitcherOn = !isSwitcherOn">
+      <div class="vec-chevron_l" :class="{ 'vec-chevron_l-left': isSwitcherOn }"></div>
     </div>
     <vec-calendar :firstDate="firstDate" :monthsOnPage="monthsOnPage" />
-    <vec-events
-      :saveEventFn="saveEventFn"
-      :editEventFn="editEventFn"
-      :removeEventFn="removeEventFn"
-      :eventComponent="eventComponent"
-    />
+    <vec-events :saveEventFn="saveEventFn" :editEventFn="editEventFn" :removeEventFn="removeEventFn"
+      :eventComponent="eventComponent" />
   </div>
 </template>
 
 <script lang="ts">
+import './styles';
 import { defineComponent, reactive, provide, watch, ref, PropType } from 'vue';
 import {
   VecLanguageLocale,
@@ -69,15 +60,15 @@ export default defineComponent({
     },
     editEventFn: {
       type: Function,
-      default: async (event: VecEvent) => {}
+      default: async (event: VecEvent) => { }
     },
     saveEventFn: {
       type: Function,
-      default: async (event: VecEvent) => {}
+      default: async (event: VecEvent) => { }
     },
     removeEventFn: {
       type: Function,
-      default: async (event: VecEvent) => {}
+      default: async (event: VecEvent) => { }
     },
     eventComponent: {
       type: Object,

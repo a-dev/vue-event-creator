@@ -29,40 +29,22 @@
     <hr class="vec-demo__divider" />
     <div class="vec-demo__locales">
       <span class="vec-demo__locales-text">Choose language:</span>
-      <button
-        :disabled="locale == 'en'"
-        class="vec-demo__locales-button"
-        @click="changeLang('en')"
-      >
-        En</button
-      ><button
-        :disabled="locale == 'es'"
-        class="vec-demo__locales-button"
-        @click="changeLang('es')"
-      >
-        Es</button
-      ><button
-        :disabled="locale == 'ru'"
-        class="vec-demo__locales-button"
-        @click="changeLang('ru')"
-      >
+      <button :disabled="locale == 'en'" class="vec-demo__locales-button" @click="changeLang('en')">
+        En</button><button :disabled="locale == 'es'" class="vec-demo__locales-button" @click="changeLang('es')">
+        Es</button><button :disabled="locale == 'ru'" class="vec-demo__locales-button" @click="changeLang('ru')">
         Ru
       </button>
     </div>
   </div>
-  <vue-event-creator
-    :key="locale"
-    :language="locale"
-    :saveEventFn="saveEventFn"
-    :getEventsFn="getEventsFn"
-    :eventComponent="DemoEventComponent"
-  ></vue-event-creator>
+  <vue-event-creator :key="locale" :language="locale" :saveEventFn="saveEventFn" :getEventsFn="getEventsFn"
+    :eventComponent="DemoEventComponent"></vue-event-creator>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import VueEventCreator from '../src/VueEventCreator.vue';
 import demoEvents from './demoEvents';
 import DemoEventComponent from './DemoEventComponent.vue';
+import { VecLanguageLocale } from '../src';
 
 export default defineComponent({
   name: 'VECDemoAppComponent',
@@ -70,7 +52,7 @@ export default defineComponent({
     VueEventCreator
   },
   setup() {
-    const locale = ref('en');
+    const locale = ref<VecLanguageLocale>('en');
 
     const saveEventFn = async (event: any) => {
       console.log('saving data...', event);
@@ -87,7 +69,7 @@ export default defineComponent({
       return demoEvents;
     };
 
-    const changeLang = (lang: string) => {
+    const changeLang = (lang: VecLanguageLocale) => {
       locale.value = lang;
     };
 
@@ -121,6 +103,7 @@ body {
   font-size: 20px;
   font-weight: 400;
 }
+
 .vec-demo {
   margin: 2rem 0;
 }

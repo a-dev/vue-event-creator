@@ -1,19 +1,14 @@
 <template>
-  <div
-    :data-es-id="day.es_id"
-    class="vec-day"
-    :class="[
-      {
-        'vec-day_weekend': isWeekend,
-        'vec-day_scheduled': day.es_id,
-        'vec-day_start-day': isStartDay,
-        'vec-day_choosing': day.choosing,
-        'vec-day_editing': day.editing,
-        'vec-day_focused': isEventFocused
-      }
-    ]"
-    @click.prevent="clickOnDay"
-  >
+  <div :data-es-id="day.es_id" class="vec-day" :class="[
+    {
+      'vec-day_weekend': isWeekend,
+      'vec-day_scheduled': day.es_id,
+      'vec-day_start-day': isStartDay,
+      'vec-day_choosing': day.choosing,
+      'vec-day_editing': day.editing,
+      'vec-day_focused': isEventFocused
+    }
+  ]" @click.prevent="clickOnDay">
     <div class="vec-day__number">{{ day.id }}</div>
   </div>
 </template>
@@ -69,7 +64,7 @@ export default {
       );
     });
 
-    const focuseEvent = () => {
+    const focusEvent = () => {
       focusedEventState.value = {
         es_id: props.day.es_id
       };
@@ -91,7 +86,7 @@ export default {
 
     const clickOnDay = () => {
       if (props.day.es_id) {
-        focuseEvent();
+        focusEvent();
       } else {
         setEvent();
       }

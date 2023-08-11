@@ -6,8 +6,12 @@ module.exports = {
   globals: {},
   moduleFileExtensions: ['js', 'ts', 'json', 'vue'],
   transform: {
-    '^.+\\.vue$': 'vue3-jest',
+    '^.+\\.js$': 'babel-jest',
+    '^.+\\.vue$': '@vue/vue3-jest',
     '^.+\\.ts$': 'ts-jest',
     '.+\\.(css|png|jpg|ttf|woff|woff2)$': 'jest-transform-stub'
+  },
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons']
   }
 };
