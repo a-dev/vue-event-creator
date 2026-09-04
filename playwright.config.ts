@@ -1,3 +1,4 @@
+import process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 // Chromium is the per-pull-request gate. Firefox and WebKit run in scheduled and
