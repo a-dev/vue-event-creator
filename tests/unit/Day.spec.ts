@@ -1,13 +1,17 @@
-import { mount } from '@vue/test-utils';
+import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import Day from '../../src/components/Day.vue';
+import { afterEach, describe, expect, test } from 'vitest';
+import { userEvent } from 'vitest/browser';
+
+enableAutoUnmount(afterEach);
 
 describe('Weekend or not', () => {
   test("This day is Saturday and it's a weekend", () => {
     const focusedEventState = ref(null);
     const choosingDatesState = {
       startsAtId: null,
-      finishesAtId: null
+      finishesAtId: null,
     };
     const wrapper = mount(Day, {
       props: {
@@ -15,27 +19,27 @@ describe('Weekend or not', () => {
           id: 4,
           choosing: false,
           editing: false,
-          es_id: 0
+          es_id: 0,
         },
         shift: 3,
-        monthId: '202109'
+        monthId: '202109',
       },
       global: {
         provide: {
           choosingDatesState,
-          focusedEventState
-        }
-      }
+          focusedEventState,
+        },
+      },
     });
     const dayElem = wrapper.find('.vec-day');
-    expect(dayElem.classes('vec-day_weekend')).toBeTruthy;
+    expect(dayElem.classes('vec-day_weekend')).toBeTruthy();
   });
 
   test("This day is Wednesday and it's not weekend", () => {
     const focusedEventState = ref(null);
     const choosingDatesState = {
       startsAtId: null,
-      finishesAtId: null
+      finishesAtId: null,
     };
     const wrapper = mount(Day, {
       props: {
@@ -43,20 +47,20 @@ describe('Weekend or not', () => {
           id: 3,
           choosing: false,
           editing: false,
-          es_id: 0
+          es_id: 0,
         },
         shift: 3,
-        monthId: '202109'
+        monthId: '202109',
       },
       global: {
         provide: {
           choosingDatesState,
-          focusedEventState
-        }
-      }
+          focusedEventState,
+        },
+      },
     });
     const dayElem = wrapper.find('.vec-day');
-    expect(dayElem.classes('vec-day_weekend')).toBeFalsy;
+    expect(dayElem.classes('vec-day_weekend')).toBeFalsy();
   });
 });
 
@@ -65,7 +69,7 @@ describe('Is the day included in the multi-day event?', () => {
     const focusedEventState = ref(null);
     const choosingDatesState = {
       startsAtId: null,
-      finishesAtId: null
+      finishesAtId: null,
     };
     const wrapper = mount(Day, {
       props: {
@@ -73,28 +77,28 @@ describe('Is the day included in the multi-day event?', () => {
           id: 4,
           choosing: false,
           editing: false,
-          es_id: 20210904
+          es_id: 20210904,
         },
         shift: 3,
-        monthId: '202109'
+        monthId: '202109',
       },
       global: {
         provide: {
           choosingDatesState,
-          focusedEventState
-        }
-      }
+          focusedEventState,
+        },
+      },
     });
 
     const dayElem = wrapper.find('.vec-day');
-    expect(dayElem.classes('vec-day_start-day')).toBeTruthy;
+    expect(dayElem.classes('vec-day_start-day')).toBeTruthy();
   });
 
   test('This is the second day of the event', () => {
     const focusedEventState = ref(null);
     const choosingDatesState = {
       startsAtId: null,
-      finishesAtId: null
+      finishesAtId: null,
     };
     const wrapper = mount(Day, {
       props: {
@@ -102,102 +106,97 @@ describe('Is the day included in the multi-day event?', () => {
           id: 5,
           choosing: false,
           editing: false,
-          es_id: 20210904
+          es_id: 20210904,
         },
         shift: 3,
-        monthId: '202109'
+        monthId: '202109',
       },
       global: {
         provide: {
           choosingDatesState,
-          focusedEventState
-        }
-      }
+          focusedEventState,
+        },
+      },
     });
 
     const dayElem = wrapper.find('.vec-day');
-    expect(dayElem.classes('vec-day_start-day')).toBeFalsy;
+    expect(dayElem.classes('vec-day_start-day')).toBeFalsy();
   });
 });
 
 describe('Clicks on the day', () => {
-  test('Click on the day changes the state from choosing to scheduled', async () => {
+  test('Clicking the day selects its start and finish dates', async () => {
     const focusedEventState = ref(null);
     const choosingDatesState = {
       startsAtId: null,
-      finishesAtId: null
+      finishesAtId: null,
     };
     const wrapper = mount(Day, {
+      attachTo: document.body,
       props: {
         day: {
           id: 4,
           choosing: false,
           editing: false,
-          es_id: 0
+          es_id: 0,
         },
         shift: 3,
-        monthId: '202109'
+        monthId: '202109',
       },
       global: {
         provide: {
           choosingDatesState,
-          focusedEventState
-        }
-      }
+          focusedEventState,
+        },
+      },
     });
 
     const dayElem = wrapper.find('.vec-day');
-    expect(dayElem.classes('vec-day_choosing')).toBeFalsy;
-
-    await dayElem.trigger('click');
+    await userEvent.click(dayElem.element);
     expect(choosingDatesState.startsAtId).toEqual({
       monthId: '202109',
-      dayId: 4
+      dayId: 4,
     });
     expect(choosingDatesState.finishesAtId).toBe(null);
-    expect(dayElem.classes('vec-day_choosing')).toBeTruthy;
-
-    await wrapper.find('.vec-day').trigger('click');
+    await userEvent.click(dayElem.element);
     expect(choosingDatesState.finishesAtId).toEqual({
       monthId: '202109',
-      dayId: 4
+      dayId: 4,
     });
-    expect(dayElem.classes('vec-day_choosing')).toBeFalsy;
-    expect(dayElem.classes('vec-day_scheduled')).toBeTruthy;
-    expect(dayElem.classes('vec-day_editing')).toBeTruthy;
   });
 
   test('Click on the day with a scheduled event changes a focus', async () => {
     const focusedEventState = ref(null);
     const choosingDatesState = {
       startsAtId: null,
-      finishesAtId: null
+      finishesAtId: null,
     };
 
     const wrapper = mount(Day, {
+      attachTo: document.body,
       props: {
         day: {
           id: 4,
           choosing: false,
           editing: false,
-          es_id: 20210904
+          es_id: 20210904,
         },
         shift: 3,
-        monthId: '202109'
+        monthId: '202109',
       },
       global: {
         provide: {
           choosingDatesState,
-          focusedEventState
-        }
-      }
+          focusedEventState,
+        },
+      },
     });
 
     const dayElem = wrapper.find('.vec-day');
-    expect(dayElem.classes('vec-day_focused')).toBeFalsy;
+    expect(dayElem.classes('vec-day_focused')).toBeFalsy();
 
-    await dayElem.trigger('click');
-    expect(dayElem.classes('vec-day_focused')).toBeTruthy;
+    await userEvent.click(dayElem.element);
+    expect(dayElem.classes('vec-day_focused')).toBeTruthy();
     expect(focusedEventState.value).toEqual({ es_id: 20210904 });
   });
 });

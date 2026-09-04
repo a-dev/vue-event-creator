@@ -5,14 +5,15 @@ import {
   setValueToEventDates,
   removeEventFromCalendar,
   useCalendarActions,
-  nullifyChoosingDatesState
+  nullifyChoosingDatesState,
 } from '../../src/hooks/useCalendarActions';
 import { ref } from 'vue';
 import { July2021CalendarState, createEventsWithDates } from './utils';
+import { describe, expect, test } from 'vitest';
 
 test('Show how many days are between two dates (Date type used)', () => {
   expect(
-    getRangeBetweenEventDates(new Date('2021-07-01'), new Date('2021-07-10'))
+    getRangeBetweenEventDates(new Date('2021-07-01'), new Date('2021-07-10')),
   ).toBe(9);
 });
 
@@ -25,7 +26,7 @@ test("Make day's format with two digits", () => {
 test('Nullify a choosing state', () => {
   const choosingDatesState = {
     startsAtId: { monthId: '202109', dayId: '10' },
-    finishesAtId: { monthId: '202109', dayId: '12' }
+    finishesAtId: { monthId: '202109', dayId: '12' },
   };
   nullifyChoosingDatesState(choosingDatesState);
   expect(choosingDatesState).toEqual({ startsAtId: null, finishesAtId: null });
@@ -38,7 +39,7 @@ test('Set a value to the date', () => {
   expect(calendarState.months[0].days[19].editing).toBe(false);
   setValueToDate(calendarState, new Date('2021-07-20'), {
     choosing: true,
-    editing: true
+    editing: true,
   });
   expect(calendarState.months[0].days[19].choosing).toBe(true);
   expect(calendarState.months[0].days[19].editing).toBe(true);
@@ -50,7 +51,7 @@ test('Set a value to the date with the VecDateId', () => {
   setValueToDate(
     calendarState,
     { monthId: '202107', dayId: '05' },
-    { editing: true }
+    { editing: true },
   );
   expect(calendarState.months[0].days[4].editing).toBe(true);
 });
@@ -64,7 +65,7 @@ test('Set a value to the dates of event', () => {
   }
   setValueToEventDates(calendarState, events[0], {
     editing: true,
-    es_id: events[0].es_id
+    es_id: events[0].es_id,
   });
   for (let d of [19, 20, 21, 22, 23, 24]) {
     expect(calendarState.months[0].days[d].editing).toBe(true);
@@ -75,27 +76,38 @@ test('Set a value to the dates of event', () => {
 });
 
 describe('Actions with event', () => {
-  const calendarState = July2021CalendarState();
-  const events = ref(
-    createEventsWithDates(['2021-07-20:2021-07-25', '2021-08-05:2021-08-05'])
-  );
-  const choosingDatesState = {
-    startsAtId: { monthId: '202109', dayId: '10' },
-    finishesAtId: { monthId: '202109', dayId: '12' }
+  const setup = () => {
+    const calendarState = July2021CalendarState();
+    const events = ref(
+      createEventsWithDates(['2021-07-20:2021-07-25', '2021-08-05:2021-08-05']),
+    );
+    const choosingDatesState = {
+      startsAtId: { monthId: '202109', dayId: '10' },
+      finishesAtId: { monthId: '202109', dayId: '12' },
+    };
+    const focusedEventState = ref(null);
+    const defaultTimeState = {
+      startsAtTime: '10:00',
+      finishesAtTime: '17:00',
+    };
+    const actions = useCalendarActions(
+      calendarState,
+      events,
+      choosingDatesState,
+      focusedEventState,
+    );
+
+    return {
+      calendarState,
+      events,
+      choosingDatesState,
+      defaultTimeState,
+      ...actions,
+    };
   };
-  const focusedEventState = ref(null);
-  const defaultTimeState = {
-    startsAtTime: '10:00',
-    finishesAtTime: '17:00'
-  };
-  const { calendarFillEvents, setEventOnChoosingDays } = useCalendarActions(
-    calendarState,
-    events,
-    choosingDatesState,
-    focusedEventState
-  );
 
   test('Fill prepared events', () => {
+    const { calendarState, calendarFillEvents } = setup();
     expect(calendarState.months[0].days[19].es_id).toBe(null);
     expect(calendarState.months[1].days[4].es_id).toBe(null);
 
@@ -107,6 +119,8 @@ describe('Actions with event', () => {
   });
 
   test('Set an event which keeps in the choosingDates state', () => {
+    const { calendarState, defaultTimeState, setEventOnChoosingDays } = setup();
+    calendarFillEventsFor(calendarState);
     expect(calendarState.months[2].days[9].es_id).toBe(null);
 
     setEventOnChoosingDays(defaultTimeState);
@@ -115,10 +129,15 @@ describe('Actions with event', () => {
   });
 
   test('After setting an event on dates the choosingDates state has to be nullified', () => {
+    const { choosingDatesState, defaultTimeState, setEventOnChoosingDays } =
+      setup();
+    setEventOnChoosingDays(defaultTimeState);
     expect(choosingDatesState.startsAtId).toBe(null);
   });
 
   test('Remove the first event', () => {
+    const { calendarState, events, calendarFillEvents } = setup();
+    calendarFillEvents();
     expect(calendarState.months[0].days[19].es_id).toBe(20210720);
     expect(calendarState.months[0].days[24].es_id).toBe(20210720);
 
@@ -128,6 +147,14 @@ describe('Actions with event', () => {
   });
 
   test('Set an event on the occupied dates', () => {
+    const {
+      calendarState,
+      choosingDatesState,
+      defaultTimeState,
+      setEventOnChoosingDays,
+      calendarFillEvents,
+    } = setup();
+    calendarFillEvents();
     choosingDatesState.startsAtId = { monthId: '202108', dayId: '04' };
     choosingDatesState.finishesAtId = { monthId: '202108', dayId: '05' }; // this date occupied
 
@@ -143,3 +170,17 @@ describe('Actions with event', () => {
     expect(calendarState.months[1].days[3].es_id).toBe(null);
   });
 });
+
+function calendarFillEventsFor(
+  calendarState: ReturnType<typeof July2021CalendarState>,
+) {
+  const events = ref(
+    createEventsWithDates(['2021-07-20:2021-07-25', '2021-08-05:2021-08-05']),
+  );
+  useCalendarActions(
+    calendarState,
+    events,
+    { startsAtId: null, finishesAtId: null },
+    ref(null),
+  ).calendarFillEvents();
+}

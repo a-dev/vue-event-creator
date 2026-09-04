@@ -1,20 +1,21 @@
 import {
   sortEvents,
   buildEventOnThisDays,
-  useEventActions
+  useEventActions,
 } from '../../src/hooks/useEventActions';
 import { useCalendarActions } from '../../src/hooks/useCalendarActions';
 
 import { ref } from 'vue';
 import { July2021CalendarState, createEventsWithDates } from './utils';
+import { describe, expect, test } from 'vitest';
 
 test('Sort events', () => {
   const events = ref(
     createEventsWithDates([
       '2021-09-02:2021-09-05',
       '2021-08-01:2021-08-01',
-      '2021-07-10:2021-07-10'
-    ])
+      '2021-07-10:2021-07-10',
+    ]),
   );
   expect(events.value[0].es_id).toBe(20210902);
   expect(events.value[1].es_id).toBe(20210801);
@@ -26,11 +27,11 @@ test('Sort events', () => {
 test('Build the event on the certain days', () => {
   const choosingDatesState = {
     startsAtId: { monthId: '202109', dayId: '10' },
-    finishesAtId: { monthId: '202109', dayId: '12' }
+    finishesAtId: { monthId: '202109', dayId: '12' },
   };
   const defaultTimeState = {
     startsAtTime: '10:00',
-    finishesAtTime: '17:00'
+    finishesAtTime: '17:00',
   };
 
   const event = buildEventOnThisDays(choosingDatesState, defaultTimeState);
@@ -40,37 +41,52 @@ test('Build the event on the certain days', () => {
     es_id: 20210910,
     startsAt: new Date('2021-09-10T10:00:00.000Z'),
     finishesAt: new Date('2021-09-12T17:00:00.000Z'),
-    editing: true
+    editing: true,
   });
 });
 
+test('Orders a reversed date selection before building the event', () => {
+  const event = buildEventOnThisDays(
+    {
+      startsAtId: { monthId: '202109', dayId: '12' },
+      finishesAtId: { monthId: '202109', dayId: '10' },
+    },
+    {
+      startsAtTime: '10:00',
+      finishesAtTime: '17:00',
+    },
+  );
+
+  expect(event.startsAt).toEqual(new Date('2021-09-10T10:00:00.000Z'));
+  expect(event.finishesAt).toEqual(new Date('2021-09-12T17:00:00.000Z'));
+});
+
 describe('Use event actions', () => {
-  const calendarState = July2021CalendarState();
-  const eventsState = ref(
-    createEventsWithDates([
-      '2021-07-10:2021-07-10',
-      '2021-08-01:2021-08-01',
-      '2021-09-02:2021-09-10'
-    ])
-  );
-  const choosingDatesState = {
-    startsAtId: { monthId: '202109', dayId: '10' },
-    finishesAtId: { monthId: '202109', dayId: '12' }
+  const setup = () => {
+    const calendarState = July2021CalendarState();
+    const eventsState = ref(
+      createEventsWithDates([
+        '2021-07-10:2021-07-10',
+        '2021-08-01:2021-08-01',
+        '2021-09-02:2021-09-10',
+      ]),
+    );
+    useCalendarActions(
+      calendarState,
+      eventsState,
+      { startsAtId: null, finishesAtId: null },
+      ref(null),
+    ).calendarFillEvents();
+
+    return {
+      calendarState,
+      eventsState,
+      ...useEventActions(eventsState, calendarState),
+    };
   };
-  const focusedEventState = ref(null);
-  const { calendarFillEvents } = useCalendarActions(
-    calendarState,
-    eventsState,
-    choosingDatesState,
-    focusedEventState
-  );
-
-  const { removeEventAction, toggleEventEditAction, updateEventInTheState } =
-    useEventActions(eventsState, calendarState);
-
-  calendarFillEvents();
 
   test('Remove the event', () => {
+    const { calendarState, eventsState, removeEventAction } = setup();
     const eventForRemoving = { ...eventsState.value[2] };
 
     expect(eventsState.value[2].es_id).toBe(20210902);
@@ -83,16 +99,18 @@ describe('Use event actions', () => {
   });
 
   test('Update the event in the state', () => {
+    const { eventsState, updateEventInTheState } = setup();
     const eventFroUpdating = { ...eventsState.value[1] };
     expect(eventsState.value[1].data).toBe(undefined);
 
     updateEventInTheState(eventFroUpdating, {
-      data: { title: 'Title', text: 'Text' }
+      data: { title: 'Title', text: 'Text' },
     });
     expect(eventsState.value[1].data).toEqual({ title: 'Title', text: 'Text' });
   });
 
   test('Toggle editing state of the event', () => {
+    const { calendarState, eventsState, toggleEventEditAction } = setup();
     const eventForEditing = { ...eventsState.value[0] };
     expect(calendarState.months[0].days[9].editing).toBe(false);
 

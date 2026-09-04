@@ -2,33 +2,72 @@
   <div v-if="loader" class="vec-loader__wrapper">
     <div class="vec-loader"></div>
   </div>
-  <div v-else class="vec-body">
-    <div class="vec-calendar__switcher" :class="{ 'vec-calendar__switcher_on': isSwitcherOn }"
-      @click="isSwitcherOn = !isSwitcherOn">
-      <div class="vec-chevron_l" :class="{ 'vec-chevron_l-left': isSwitcherOn }"></div>
-    </div>
+  <div v-else-if="loadError" class="vec-load-error" role="alert">
+    <span>{{ loadError }}</span>
+    <button type="button" class="vec-button" @click="loadEvents">
+      {{ i18n.t('button_retry') }}
+    </button>
+  </div>
+  <div v-else ref="rootElement" class="vec-body">
+    <button
+      type="button"
+      class="vec-calendar__switcher"
+      :class="{ 'vec-calendar__switcher_on': isSwitcherOn }"
+      :aria-expanded="isSwitcherOn"
+      :aria-label="i18n.t('calendar_switcher')"
+      @click="isSwitcherOn = !isSwitcherOn"
+    >
+      <div
+        class="vec-chevron_l"
+        :class="{ 'vec-chevron_l-left': isSwitcherOn }"
+      ></div>
+    </button>
     <vec-calendar :firstDate="firstDate" :monthsOnPage="monthsOnPage" />
-    <vec-events :saveEventFn="saveEventFn" :editEventFn="editEventFn" :removeEventFn="removeEventFn"
-      :eventComponent="eventComponent" />
+    <vec-events
+      :saveEventFn="saveEventFn"
+      :editEventFn="editEventFn"
+      :removeEventFn="removeEventFn"
+      :eventComponent="eventComponent"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import './styles';
-import { defineComponent, reactive, provide, watch, ref, PropType } from 'vue';
 import {
-  VecLanguageLocale,
-  VecEvent,
+  defineComponent,
+  reactive,
+  provide,
+  watch,
+  ref,
+  toRef,
+  type Component,
+  type PropType,
+} from 'vue';
+import {
   VecCalendarState,
   VecChoosingDatesState,
-  VecDefaultTime,
-  VecFocusedEventState
-} from './index';
-import { setI18n } from './locales/index';
+  VecEvent,
+  VecFocusedEventState,
+  toInternalEvent,
+} from './types/internal';
+import type {
+  DefaultTime,
+  EditEventFn,
+  GetEventsFn,
+  LanguageLocale,
+  RemoveEventFn,
+  SaveEventFn,
+} from './types/public';
+import { createI18n, i18nKey } from './locales/index';
 import VecCalendar from './components/Calendar.vue';
-import { setDayJsLang, makeEsIdFromStartsAt } from './lib/dayjs';
+import { makeEsIdFromStartsAt } from './lib/dayjs';
 import VecEvents from './components/Events.vue';
-import { useCalendarActions, setValueToDate } from './hooks/useCalendarActions';
+import {
+  useCalendarActions,
+  setValueToDate,
+  nullifyChoosingDatesState,
+} from './hooks/useCalendarActions';
+import { useDocumentClick } from './hooks/useDocumentClick';
 import { buildMonthsForCalendarState } from './hooks/calendarBuildActions';
 import { sortEvents } from './hooks/useEventActions';
 
@@ -36,66 +75,69 @@ export default defineComponent({
   name: 'VueEventCreator',
   components: {
     VecCalendar,
-    VecEvents
+    VecEvents,
   },
   props: {
     language: {
-      type: String as PropType<VecLanguageLocale>,
-      default: 'en'
+      type: String as PropType<LanguageLocale>,
+      default: 'en',
     },
     firstDate: {
       type: Date,
-      default: new Date()
+      default: () => new Date(),
     },
     defaultTime: {
-      type: Object as PropType<VecDefaultTime>,
+      type: Object as PropType<DefaultTime>,
       default: () => ({
         startsAtTime: '10:00',
-        finishesAtTime: '17:00'
-      })
+        finishesAtTime: '17:00',
+      }),
     },
     monthsOnPage: {
       type: Number,
-      default: 3
+      default: 3,
     },
     editEventFn: {
-      type: Function,
-      default: async (event: VecEvent) => { }
+      type: Function as PropType<EditEventFn>,
+      default: async () => {},
     },
     saveEventFn: {
-      type: Function,
-      default: async (event: VecEvent) => { }
+      type: Function as PropType<SaveEventFn>,
+      default: async () => undefined as never,
     },
     removeEventFn: {
-      type: Function,
-      default: async (event: VecEvent) => { }
+      type: Function as PropType<RemoveEventFn>,
+      default: async () => {},
     },
     eventComponent: {
-      type: Object,
-      default: {}
+      type: [Object, Function] as PropType<Component>,
+      default: undefined,
     },
     getEventsFn: {
-      type: Function,
-      default: async () => []
-    }
+      type: Function as PropType<GetEventsFn>,
+      default: async () => [],
+    },
   },
   setup(props) {
     const loader = ref(true);
+    const loadError = ref('');
     const isSwitcherOn = ref(false); // only for small screens
+    const rootElement = ref<HTMLElement>();
 
     const calendarState = reactive<VecCalendarState>({
-      months: []
+      months: [],
     });
     const eventsState = ref<VecEvent[]>([]);
     const choosingDatesState = reactive<VecChoosingDatesState>({
       startsAtId: null,
-      finishesAtId: null
+      finishesAtId: null,
     });
 
-    const defaultTimeState = reactive<VecDefaultTime>(props.defaultTime);
+    const defaultTimeState = reactive<DefaultTime>({ ...props.defaultTime });
 
-    setI18n(props.language);
-    setDayJsLang(props.language);
+    const languageState = toRef(props, 'language');
+    const i18n = createI18n(languageState);
+    provide(i18nKey, i18n);
 
     const focusedEventState = ref(null) as VecFocusedEventState;
 
@@ -103,24 +145,93 @@ export default defineComponent({
       calendarState,
       eventsState,
       choosingDatesState,
-      focusedEventState
+      focusedEventState,
     );
 
-    props.getEventsFn().then((result: VecEvent[]) => {
-      eventsState.value = result.map((e) => {
-        e.es_id = makeEsIdFromStartsAt(e.startsAt);
-        return e;
-      });
-      sortEvents(eventsState);
+    const validateLoadedEvents = (events: Awaited<ReturnType<GetEventsFn>>) => {
+      const ordered = [...events].sort(
+        (left, right) => +left.startsAt - +right.startsAt,
+      );
 
+      for (const [index, event] of ordered.entries()) {
+        if (
+          !(event.startsAt instanceof Date) ||
+          !(event.finishesAt instanceof Date) ||
+          Number.isNaN(+event.startsAt) ||
+          Number.isNaN(+event.finishesAt)
+        ) {
+          throw new Error('Loaded events contain an invalid date');
+        }
+        if (event.startsAt > event.finishesAt) {
+          throw new Error(
+            'A loaded event starts later than it finishes; the finish date cannot be earlier',
+          );
+        }
+
+        const previous = ordered[index - 1];
+        if (
+          previous &&
+          makeEsIdFromStartsAt(event.startsAt) <=
+            makeEsIdFromStartsAt(previous.finishesAt)
+        ) {
+          throw new Error(
+            'Loaded events overlap on at least one calendar date',
+          );
+        }
+      }
+
+      return ordered;
+    };
+
+    const rebuildCalendar = () => {
       calendarState.months = buildMonthsForCalendarState(
         props.firstDate,
         eventsState.value,
-        props.monthsOnPage
+        props.monthsOnPage,
       );
       calendarFillEvents();
-      loader.value = false;
-    });
+    };
+
+    const loadEvents = async () => {
+      loader.value = true;
+      loadError.value = '';
+      try {
+        const result = validateLoadedEvents(await props.getEventsFn());
+        eventsState.value = result.map((event) =>
+          toInternalEvent(event, makeEsIdFromStartsAt(event.startsAt)),
+        );
+        sortEvents(eventsState);
+
+        rebuildCalendar();
+      } catch (error) {
+        eventsState.value = [];
+        calendarState.months = [];
+        loadError.value =
+          error instanceof Error ? error.message : 'Unable to load events';
+      } finally {
+        loader.value = false;
+      }
+    };
+
+    void loadEvents();
+
+    watch(
+      () => props.defaultTime,
+      (next) => Object.assign(defaultTimeState, next),
+      { deep: true },
+    );
+
+    watch(
+      () => [props.firstDate, props.monthsOnPage] as const,
+      () => {
+        if (loader.value || loadError.value) return;
+        nullifyChoosingDatesState(choosingDatesState);
+        rebuildCalendar();
+      },
+    );
+
+    // One controller per instance; it removes its own listeners on unmount.
+    const documentClick = useDocumentClick();
 
     watch(choosingDatesState, (next) => {
       if (!next) return;
@@ -128,25 +239,23 @@ export default defineComponent({
       if (next.finishesAtId) {
         setEventOnChoosingDays(defaultTimeState);
       } else if (next.startsAtId) {
-        setValueToDate(calendarState, next.startsAtId!, {
-          choosing: true
+        const startsAtId = next.startsAtId;
+        setValueToDate(calendarState, startsAtId, {
+          choosing: true,
         });
 
-        const listenDayClick = (e: any) => {
-          document.body.removeEventListener('click', listenDayClick);
+        documentClick.listenToNextClick('choosing-dates', (target) => {
+          documentClick.stop('choosing-dates');
 
           const isTargetElemDay =
-            e.target.classList.contains('vec-day__number') ||
-            e.target.classList.contains('vec-day');
+            target.classList.contains('vec-day__number') ||
+            target.classList.contains('vec-day');
           if (!isTargetElemDay) {
-            setValueToDate(calendarState, next.startsAtId!, {
-              choosing: false
+            setValueToDate(calendarState, startsAtId, {
+              choosing: false,
             });
             choosingDatesState.startsAtId = null;
           }
-        };
-        setTimeout(() => {
-          document.body.addEventListener('click', listenDayClick);
         });
       }
     });
@@ -154,38 +263,29 @@ export default defineComponent({
     watch(focusedEventState, (next) => {
       if (!next) return;
 
-      const listenClickAfterFocus = ((focusedEsId) => {
-        const handleClick = (e: any) => {
-          const targetElem = e.target.classList.contains('vec-day__number')
-            ? e.target.parentElement
-            : e.target;
+      const focusedEsId = next.es_id;
 
-          const eventElems = Array.from(
-            document.querySelectorAll(`[data-es-id="${focusedEsId}"]`)
-          );
-          if (eventElems.length) {
-            let founded = false;
-            for (const el of eventElems) {
-              if (el === targetElem) {
-                founded = true;
-                break;
-              }
-            }
-            if (!founded) {
-              document.body.removeEventListener('click', handleClick);
-              if (!targetElem.hasAttribute('data-es-id')) {
-                focusedEventState.value = null;
-              }
-            }
-          } else {
-            document.body.removeEventListener('click', handleClick);
-          }
-        };
-        return handleClick;
-      })(next.es_id);
+      documentClick.listenToNextClick('focused-event', (target) => {
+        const targetElem = target.classList.contains('vec-day__number')
+          ? target.parentElement
+          : target;
+        if (!targetElem) return;
 
-      setTimeout(() => {
-        document.body.addEventListener('click', listenClickAfterFocus);
+        // Scoped to this instance, so a day of another calendar showing the
+        // same date can neither hold nor steal this instance's focus.
+        const focusedDays = Array.from(
+          rootElement.value?.querySelectorAll(
+            `[data-es-id="${focusedEsId}"]`,
+          ) ?? [],
+        );
+        if (focusedDays.includes(targetElem)) return;
+
+        documentClick.stop('focused-event');
+
+        // Another day of this instance took the focus during the same click.
+        if (focusedEventState.value?.es_id !== focusedEsId) return;
+
+        focusedEventState.value = null;
       });
     });
 
@@ -198,10 +298,23 @@ export default defineComponent({
     return {
       calendarState,
       loader,
-      isSwitcherOn
+      loadError,
+      loadEvents,
+      i18n,
+      isSwitcherOn,
+      rootElement,
     };
-  }
+  },
 });
 </script>
 
-<style></style>
+<style src="./styles/vars.css"></style>
+<style src="./styles/layout.css"></style>
+<style src="./styles/utils.css"></style>
+<style src="./styles/buttons.css"></style>
+<style src="./styles/calendar.css"></style>
+<style src="./styles/day.css"></style>
+<style src="./styles/month.css"></style>
+<style src="./styles/default-time.css"></style>
+<style src="./styles/event.css"></style>
+<style src="./styles/guard-alert.css"></style>

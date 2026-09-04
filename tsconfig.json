@@ -2,22 +2,34 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
     "importHelpers": true,
-    "types": ["vite/client", "@types/jest"],
+    "types": ["vite/client", "vitest/globals"],
     "lib": ["esnext", "dom"],
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.vue",
     "demo/**/*.ts",
-    "tests/**/*.vue"
+    "tests/**/*.ts",
+    "tests/**/*.vue",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "coverage",
+    "demo-dist",
+    "playwright-report",
+    "test-results",
+    "tests/package-consumer"
   ]
 }

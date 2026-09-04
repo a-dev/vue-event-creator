@@ -1,13 +1,14 @@
+import process from 'node:process';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
   plugins: [vue()],
   server: {
-    host: '0.0.0.0'
+    host: '0.0.0.0',
   },
   base: process.env.NODE_ENV === 'production' ? '/vue-event-creator/' : './',
   build: {
-    outDir: '../docs'
-  }
+    outDir: '../demo-dist',
+  },
 });

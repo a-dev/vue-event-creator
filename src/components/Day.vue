@@ -1,25 +1,33 @@
 <template>
-  <div :data-es-id="day.es_id" class="vec-day" :class="[
-    {
-      'vec-day_weekend': isWeekend,
-      'vec-day_scheduled': day.es_id,
-      'vec-day_start-day': isStartDay,
-      'vec-day_choosing': day.choosing,
-      'vec-day_editing': day.editing,
-      'vec-day_focused': isEventFocused
-    }
-  ]" @click.prevent="clickOnDay">
+  <button
+    type="button"
+    :data-es-id="day.es_id"
+    class="vec-day"
+    :aria-label="dayLabel"
+    :aria-pressed="Boolean(day.choosing || day.es_id)"
+    :class="[
+      {
+        'vec-day_weekend': isWeekend,
+        'vec-day_scheduled': day.es_id,
+        'vec-day_start-day': isStartDay,
+        'vec-day_choosing': day.choosing,
+        'vec-day_editing': day.editing,
+        'vec-day_focused': isEventFocused,
+      },
+    ]"
+    @click.prevent="clickOnDay"
+  >
     <div class="vec-day__number">{{ day.id }}</div>
-  </div>
+  </button>
 </template>
 <script lang="ts">
-import { computed, inject, PropType } from 'vue';
+import { computed, inject, type PropType } from 'vue';
 import {
   VecChoosingDatesState,
   VecFocusedEventState,
   VecDayData,
-  VecMonthId
-} from '../index';
+  VecMonthId,
+} from '../types/internal';
 import { makeFormatDayDD } from '../hooks/useCalendarActions';
 
 interface DayProps {
@@ -33,16 +41,16 @@ export default {
   props: {
     day: {
       type: Object as PropType<VecDayData>,
-      required: true
+      required: true,
     },
     shift: {
       type: Number,
-      required: true
+      required: true,
     },
     monthId: {
       type: String as PropType<VecMonthId>,
-      required: true
-    }
+      required: true,
+    },
   },
   setup(props: DayProps) {
     const isWeekend = computed(() => {
@@ -50,12 +58,19 @@ export default {
       return a === 6 || a === 0;
     });
 
+    const dayLabel = computed(() => {
+      const month = String(props.monthId);
+      return `${month.slice(0, 4)}-${month.slice(4)}-${makeFormatDayDD(
+        props.day.id,
+      )}`;
+    });
+
     const choosingDatesState = inject(
-      'choosingDatesState'
+      'choosingDatesState',
     ) as VecChoosingDatesState;
 
     const focusedEventState = inject(
-      'focusedEventState'
+      'focusedEventState',
     ) as VecFocusedEventState;
 
     const isEventFocused = computed(() => {
@@ -66,7 +81,7 @@ export default {
 
     const focusEvent = () => {
       focusedEventState.value = {
-        es_id: props.day.es_id
+        es_id: props.day.es_id,
       };
     };
 
@@ -74,12 +89,12 @@ export default {
       if (choosingDatesState.startsAtId) {
         choosingDatesState.finishesAtId = {
           monthId: props.monthId,
-          dayId: props.day.id
+          dayId: props.day.id,
         };
       } else {
         choosingDatesState.startsAtId = {
           monthId: props.monthId,
-          dayId: props.day.id
+          dayId: props.day.id,
         };
       }
     };
@@ -102,8 +117,9 @@ export default {
       isWeekend,
       clickOnDay,
       isEventFocused,
-      isStartDay
+      isStartDay,
+      dayLabel,
     };
-  }
+  },
 };
 </script>

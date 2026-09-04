@@ -1,5 +1,5 @@
 <template>
-  <div class="vec-events__wrapper">
+  <div ref="eventsRoot" class="vec-events__wrapper">
     <vec-default-time-component />
     <div class="vec-events">
       <vec-event-component
@@ -18,34 +18,45 @@
 import VecDefaultTimeComponent from './DefaultTime.vue';
 import VecEventComponent from './Event.vue';
 
-import { defineComponent, inject, watch, nextTick, Ref } from 'vue';
-import { VecEvent, VecFocusedEventState } from '../index';
+import {
+  defineComponent,
+  inject,
+  ref,
+  watch,
+  nextTick,
+  type Component,
+  type PropType,
+  type Ref,
+} from 'vue';
+import type { VecEvent, VecFocusedEventState } from '../types/internal';
+import type { EditEventFn, RemoveEventFn, SaveEventFn } from '../types/public';
 
 export default defineComponent({
   name: 'VECEvents',
   components: {
     VecDefaultTimeComponent,
-    VecEventComponent
+    VecEventComponent,
   },
   props: {
     editEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<EditEventFn>,
+      required: true,
     },
     saveEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<SaveEventFn>,
+      required: true,
     },
     removeEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<RemoveEventFn>,
+      required: true,
     },
     eventComponent: {
-      type: Object,
-      required: true
-    }
+      type: [Object, Function] as PropType<Component>,
+      default: undefined,
+    },
   },
   setup() {
+    const eventsRoot = ref<HTMLElement>();
     const events = inject('eventsState') as Ref<VecEvent[]>;
     const focusedEventState: VecFocusedEventState =
       inject('focusedEventState')!;
@@ -53,21 +64,23 @@ export default defineComponent({
     watch(focusedEventState, (next) => {
       if (!next) return;
 
-      nextTick(() => {
-        const eventCardElem = document.getElementById(
-          `vec-es-id-${next.es_id}`
-        ) as HTMLDivElement | undefined;
+      void nextTick(() => {
+        // Scoped to this instance so several calendars cannot scroll each other.
+        const eventCardElem = eventsRoot.value?.querySelector<HTMLElement>(
+          `[data-vec-event-id="${next.es_id}"]`,
+        );
         eventCardElem?.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
-          inline: 'nearest'
+          inline: 'nearest',
         });
       });
     });
 
     return {
-      events
+      events,
+      eventsRoot,
     };
-  }
+  },
 });
 </script>

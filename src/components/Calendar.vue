@@ -12,6 +12,7 @@
       </div>
     </div>
     <button
+      type="button"
       class="vec-months__shift vec-months__shift_before"
       @click="addMonthsToCalendar('before')"
     >
@@ -23,6 +24,7 @@
       :month="month"
     />
     <button
+      type="button"
       class="vec-months__shift vec-months__shift_after"
       @click="addMonthsToCalendar('after')"
     >
@@ -31,8 +33,8 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, inject, ref } from 'vue';
-import { VecCalendarState } from '../index';
+import { computed, defineComponent, inject } from 'vue';
+import type { VecCalendarState } from '../types/internal';
 import { useI18n } from '../locales/index';
 import dayjs from '../lib/dayjs';
 import VecMonth from './Month.vue';
@@ -41,7 +43,7 @@ import { calendarAddMonths } from '../hooks/calendarBuildActions';
 export default defineComponent({
   name: 'VECCalendar',
   components: {
-    VecMonth
+    VecMonth,
   },
   setup() {
     const calendarState = inject('calendarState') as VecCalendarState;
@@ -50,26 +52,23 @@ export default defineComponent({
     const addMonthsToCalendar = (direction: 'before' | 'after') => {
       calendarState.months = calendarAddMonths(
         calendarState,
-        direction
+        direction,
       ).slice();
     };
 
-    const isSundayFirst = dayjs.localeData().firstDayOfWeek() === 0;
-    let weekDaysArray = [];
-    if (isSundayFirst) {
-      weekDaysArray = dayjs.weekdaysMin();
-    } else {
-      let arr = [...dayjs.weekdaysMin()];
-      arr.push(arr.shift()!);
-      weekDaysArray = arr;
-    }
+    const weekDaysArray = computed(() => {
+      const localeData = dayjs().locale(i18n.language.value).localeData();
+      const weekdays = [...localeData.weekdaysMin()];
+      if (localeData.firstDayOfWeek() !== 0) weekdays.push(weekdays.shift()!);
+      return weekdays;
+    });
 
     return {
       calendarState,
       weekDaysArray,
       addMonthsToCalendar,
-      i18n
+      i18n,
     };
-  }
+  },
 });
 </script>

@@ -4,11 +4,13 @@
       <input
         class="vec-demo-card__input vec-demo-card__input_title"
         type="text"
+        aria-label="Event title"
         v-model="title"
         @input="sendData"
       />
       <textarea
         class="vec-demo-card__input vec-demo-card__input_text"
+        aria-label="Event description"
         v-model="text"
         @input="sendData"
       ></textarea>
@@ -32,12 +34,12 @@ export default defineComponent({
   props: {
     eventData: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     isEventEditing: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   setup(props, { emit }) {
     const title = ref(props.eventData?.title || 'Default title. Destroy it!');
@@ -52,9 +54,9 @@ export default defineComponent({
     return {
       title,
       text,
-      sendData
+      sendData,
     };
-  }
+  },
 });
 </script>
 <style scoped>

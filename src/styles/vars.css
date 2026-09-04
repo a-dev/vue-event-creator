@@ -19,7 +19,8 @@
   /* rem */
   --vec-rem: 20px;
   /* font */
-  --vec-font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+  --vec-font-family:
+    'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
     'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   --vec-fs-xxs: 13px;
   --vec-fs-xs: 15px;

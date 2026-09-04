@@ -10,7 +10,11 @@ export default {
   button_cancel: 'Cancel',
   button_save: 'Save',
   button_remove: 'Remove',
+  button_retry: 'Retry',
+  calendar_switcher: 'Toggle calendar',
+  event_start_time: 'Event start time',
+  event_finish_time: 'Event finish time',
   guard_yes: 'Yes',
   guard_no: 'No',
-  guard_prompt: 'Are you sure?'
+  guard_prompt: 'Are you sure?',
 };

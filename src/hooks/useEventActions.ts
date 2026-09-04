@@ -4,18 +4,18 @@ import {
   VecCalendarState,
   VecChoosingDatesState,
   VecDefaultTime,
-  VecDayOptions
-} from '../index';
+  VecDayOptions,
+} from '../types/internal';
 import dayjs from '../lib/dayjs';
 import {
   removeEventFromCalendar,
   setValueToEventDates,
-  makeFormatDayDD
+  makeFormatDayDD,
 } from './useCalendarActions';
 
 export function buildEventOnThisDays(
   choosingDatesState: VecChoosingDatesState,
-  defaultTimeState: VecDefaultTime
+  defaultTimeState: VecDefaultTime,
 ): VecEvent {
   let startsAtDayId = `${
     choosingDatesState.startsAtId!.monthId
@@ -35,13 +35,13 @@ export function buildEventOnThisDays(
     es_id: +startsAtDayId,
     startsAt: dayjs(
       startsAtDayId + `${defaultTimeState.startsAtTime}`,
-      'YYYYMMDDHH:mm'
+      'YYYYMMDDHH:mm',
     ).toDate(),
     finishesAt: dayjs(
       finishesAtDayId + `${defaultTimeState.finishesAtTime}`,
-      'YYYYMMDDHH:mm'
+      'YYYYMMDDHH:mm',
     ).toDate(),
-    editing: true
+    editing: true,
   };
 }
 
@@ -53,20 +53,22 @@ export function sortEvents(events: VecEventsState) {
 
 export function useEventActions(
   eventsState: VecEventsState,
-  calendarState: VecCalendarState
+  calendarState: VecCalendarState,
 ) {
   const removeEventAction = (event: VecEvent) => {
     eventsState.value = eventsState.value.filter(
-      (e: VecEvent) => e.es_id !== event.es_id
+      (e: VecEvent) => e.es_id !== event.es_id,
     );
     sortEvents(eventsState);
     removeEventFromCalendar(calendarState, event);
   };
 
-  const updateEventInTheState = (event: VecEvent, options: any) => {
-    const ctxEvent: VecEvent | {} =
-      eventsState.value.find((e) => e.es_id === event.es_id) ?? {};
-    Object.assign(ctxEvent, { ...event, ...options });
+  const updateEventInTheState = (
+    event: VecEvent,
+    options: Partial<VecEvent>,
+  ) => {
+    const ctxEvent = eventsState.value.find((e) => e.es_id === event.es_id);
+    if (ctxEvent) Object.assign(ctxEvent, { ...event, ...options });
   };
 
   const toggleEventEditAction = (event: VecEvent, options: VecDayOptions) => {
@@ -76,6 +78,6 @@ export function useEventActions(
   return {
     removeEventAction,
     updateEventInTheState,
-    toggleEventEditAction
+    toggleEventEditAction,
   };
 }

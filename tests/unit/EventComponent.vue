@@ -12,12 +12,12 @@ export default defineComponent({
   props: {
     eventData: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     isEventEditing: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   setup(props) {
     const title = ref(props.eventData.title);
@@ -25,8 +25,8 @@ export default defineComponent({
 
     return {
       title,
-      text
+      text,
     };
-  }
+  },
 });
 </script>

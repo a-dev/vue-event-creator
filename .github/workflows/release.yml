@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TZ: UTC
+
+jobs:
+  ci:
+    name: Ordinary CI gate
+    uses: ./.github/workflows/ci.yml
+
+  cross-browser:
+    name: Cross-browser E2E gate
+    uses: ./.github/workflows/scheduled-e2e.yml
+
+  publish:
+    name: Publish to npm
+    needs: [ci, cross-browser]
+    runs-on: ubuntu-latest
+    # The npm trusted publisher is bound to this environment name, so a release
+    # also requires whatever reviewers/branch rules that environment enforces.
+    environment: npm-publish
+    permissions:
+      contents: read
+      # Required for npm trusted publishing (OIDC) and provenance attestations.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22.12.0'
+          registry-url: 'https://registry.npmjs.org'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.1'
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Install Chromium for Playwright
+        run: bunx playwright install --with-deps chromium
+      # Node 22.12 ships npm 10; trusted publishing needs npm 11.5.1 or newer.
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+      # No NPM_TOKEN: npm exchanges the job's OIDC identity for short-lived
+      # credentials, and provenance is attached automatically.
+      # `prepublishOnly` runs `release:check` (format, types, lint, unit and
+      # browser tests, build, package checks, E2E), so publication cannot skip
+      # the gate even when invoked manually.
+      - name: Publish
+        run: npm publish --access public
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
