@@ -46,11 +46,20 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Install Chromium for Playwright
         run: bunx playwright install --with-deps chromium
-      # Trusted publishing needs npm 11.5.1 or newer. Node 24 ships a new
-      # enough npm, but upgrading keeps the requirement explicit rather than
-      # implicit in whichever npm the runner image happens to bundle.
-      - name: Upgrade npm for trusted publishing
-        run: npm install -g npm@latest
+      # Trusted publishing needs npm 11.5.1 or newer, which the npm bundled
+      # with Node 24 already satisfies. Do not `npm install -g npm@latest`
+      # here: that put the release gate on a different npm than every CI job,
+      # so a breaking npm change surfaced only at publish time. Assert the
+      # floor instead and fail loudly if a runner image ever regresses.
+      - name: Verify npm supports trusted publishing
+        run: |
+          required=11.5.1
+          actual="$(npm -v)"
+          if [ "$(printf '%s\n%s\n' "$required" "$actual" | sort -V | head -n1)" != "$required" ]; then
+            echo "npm $actual is older than $required, required for trusted publishing." >&2
+            exit 1
+          fi
+          echo "npm $actual satisfies >=$required."
       # No NPM_TOKEN: npm exchanges the job's OIDC identity for short-lived
       # credentials, and provenance is attached automatically.
       # `prepublishOnly` runs `release:check` (format, types, lint, unit and

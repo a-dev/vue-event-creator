@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { packedTarballName } from './npm-pack-result.mjs';
 
 const projectRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const fixture = join(projectRoot, 'tests/package-consumer');
@@ -44,7 +45,7 @@ try {
     throw new Error('npm pack failed');
   }
 
-  const [{ filename }] = JSON.parse(packResult.stdout);
+  const filename = packedTarballName(packResult.stdout);
   const tarballPath = join(temporaryDirectory, filename);
   const fixtureTarball = join(consumerDirectory, 'vue-event-creator.tgz');
   await rename(tarballPath, fixtureTarball);
