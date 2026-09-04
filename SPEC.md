@@ -186,7 +186,7 @@ package-lint, packed-consumer, and browser checks must pass before publication.
 
 | Dependency      | Supported                                                   |
 | --------------- | ----------------------------------------------------------- |
-| Node            | 22.12 or newer                                              |
+| Node            | 24.0 or newer                                               |
 | Package manager | Bun for development; any ESM-aware installer for consumers  |
 | Vue             | 3.5 or newer, as a peer dependency                          |
 | Module format   | ESM only; no CommonJS or UMD compatibility guarantee        |

@@ -26,7 +26,7 @@ treat this package as ESM or keep it external. CommonJS interop may happen to
 work through a bundler's compatibility layer, but it is not supported and is not
 covered by the package's type or E2E checks.
 
-The package requires Node.js 22.12 or newer for tooling, and declares Vue `^3.x`
+The package requires Node.js 24.0 or newer for tooling, and declares Vue `^3.x`
 as a peer dependency. Day.js remains the only runtime dependency.
 
 ## 2. The stylesheet moved to one documented subpath

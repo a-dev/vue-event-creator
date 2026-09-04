@@ -31,7 +31,7 @@ column and stays a draft until you save it.
 | Item             | Supported                                                          |
 | ---------------- | ------------------------------------------------------------------ |
 | Module format    | ESM only. No CommonJS, UMD, or `<script>` build is published.       |
-| Node.js          | 22.12 or newer (`engines.node`), for bundlers and tooling.          |
+| Node.js          | 24.0 or newer (`engines.node`), for bundlers and tooling.           |
 | Vue              | `^3.x` as a peer dependency; developed against 3.5.                 |
 | Runtime deps     | Day.js only. Vue stays external.                                    |
 | Browsers         | Evergreen Chromium, Firefox, and WebKit. E2E runs on all three.     |

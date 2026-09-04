@@ -13,7 +13,8 @@ changes.
 ## Toolchain
 
 - Package manager: Bun (`bun.lock` is the intended lockfile).
-- Runtime baseline for the Vite 8/Vitest 5 stack: Node 22.12 or newer.
+- Runtime baseline for the Vite 8/Vitest 5 stack: Node 24.0 or newer.
+  CI runs the latest 24.x; do not pin an exact patch.
 - TypeScript baseline: TypeScript 6, installed through the
   `typescript: npm:@typescript/typescript6` alias for Vue tooling compatibility.
 - SFC type-checker and declaration emitter: `vue-tsc`.

@@ -31,8 +31,8 @@ A breaking release. See [MIGRATION.md](MIGRATION.md) for the upgrade guide.
   `vec-es-id-<date>` element `id`.
 - **Days and the responsive switcher are `<button>` elements**, not clickable
   `<div>`s. All buttons declare `type="button"`.
-- **Node.js 22.12 or newer** is required for tooling, and Vue `^3.x` is the
-  declared peer range.
+- **Node.js 24.0 or newer** is required for tooling, and Vue `^3.x` is the
+  declared peer range. Node 22 is not supported.
 
 ### Fixed
 
