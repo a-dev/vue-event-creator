@@ -30,40 +30,44 @@
     "build": "vite build --emptyOutDir",
     "build:demo": "vite build demo/ --emptyOutDir",
     "serve": "vite preview demo-app --host",
-    "test": "jest tests/unit --coverage"
+    "test": "jest tests/unit --coverage",
+    "update:check": "npx npm-check-updates --packageManager bun --cooldown 2",
+    "update:interactive": "npx npm-check-updates --interactive -u --packageManager bun --cooldown 2"
   },
   "dependencies": {
-    "dayjs": "^1.11.9"
+    "dayjs": "^1.11.23",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0"
   },
   "peerDependencies": {
     "vue": "^3.x"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.10",
-    "@types/jest": "^29.5.3",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "@vue/compiler-sfc": "^3.3.4",
-    "@vue/eslint-config-typescript": "^11.0.3",
-    "@vue/test-utils": "^2.4.1",
-    "@vue/vue3-jest": "28",
+    "@babel/core": "^8.0.1",
+    "@types/jest": "^30.0.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/compiler-sfc": "^3.5.42",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "@vue/test-utils": "^2.5.0",
+    "@vue/vue3-jest": "29",
     "autoprefixer": "^10.4.14",
-    "babel-jest": "^29.6.2",
+    "babel-jest": "^30.5.1",
     "eslint": "^8.46.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-standard": "^5.0.0",
-    "eslint-plugin-vue": "^9.17.0",
-    "jest": "^29.6.2",
-    "jest-environment-jsdom": "^29.6.2",
+    "eslint-plugin-vue": "^10.10.0",
+    "jest": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.1",
     "jest-transform-stub": "^2.0.0",
     "postcss": "^8.4.27",
-    "terser": "^5.19.2",
-    "ts-jest": "^29.1.1",
-    "tslib": "^2.6.1",
-    "typescript": "^5.1.6",
-    "vite": "^4.4.9",
-    "vue": "^3.3.4",
-    "vue-template-compiler": "^2.7.14",
-    "vue-tsc": "^1.8.8"
+    "terser": "^5.51.2",
+    "ts-jest": "^29.4.12",
+    "tslib": "^2.8.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vue": "^3.5.42",
+    "vue-template-compiler": "^2.7.16",
+    "vue-tsc": "^3.3.11"
   }
 }
