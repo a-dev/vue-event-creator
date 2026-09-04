@@ -1,0 +1,54 @@
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Only one Pages deployment at a time; queue rather than cancel so a running
+# deployment is never left half-applied.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  TZ: UTC
+
+jobs:
+  build:
+    name: Build demo site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22.12.0'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.1'
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      # `demo/vite.config.ts` sets base to `/vue-event-creator/` for production
+      # builds, which matches the project Pages URL.
+      - name: Build demo
+        run: bun run build:demo
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: demo-dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      # Required by `actions/deploy-pages`.
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

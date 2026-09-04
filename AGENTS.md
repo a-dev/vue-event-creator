@@ -3,17 +3,17 @@
 ## Project
 
 `vue-event-creator` is a published Vue 3 component library, not an application.
-The current work targets version 2, published as ESM only. Treat the npm tarball
-and its public component/types/CSS API as the product. Read `SPEC.md` before
-changing runtime behavior and consult the TODO files before modernization work.
+Version 2 is published as ESM only. Treat the npm tarball and its public
+component/types/CSS API as the product. Read `SPEC.md` before changing runtime
+behavior and `TODO.md` before modernization work.
 
-The repository currently contains staged, user-owned migration work. Preserve
-unrelated changes and inspect `git status` before editing.
+Inspect `git status` before editing and preserve unrelated working-tree
+changes.
 
 ## Toolchain
 
 - Package manager: Bun (`bun.lock` is the intended lockfile).
-- Runtime baseline for the planned Vite 8/Vitest 5 stack: Node 22.12 or newer.
+- Runtime baseline for the Vite 8/Vitest 5 stack: Node 22.12 or newer.
 - TypeScript baseline: TypeScript 6, installed through the
   `typescript: npm:@typescript/typescript6` alias for Vue tooling compatibility.
 - SFC type-checker and declaration emitter: `vue-tsc`.
@@ -22,9 +22,9 @@ unrelated changes and inspect `git status` before editing.
 - Framework: Vue 3.
 - Library/demo build: Vite.
 - Distribution target: ESM only; do not add UMD or CommonJS output.
-- Current tests: Jest; migration target: Vitest with browser mode.
-- End-to-end target: Playwright Test.
-- Formatter/linter migration target: Oxfmt and Oxlint.
+- Tests: Vitest, with a Node project and a Playwright-backed browser project.
+- End-to-end: Playwright Test.
+- Formatter and linter: Oxfmt and Oxlint.
 
 Do not add a second lockfile. Tooling packages belong in `devDependencies`; only
 code required by consumers at runtime belongs in `dependencies`.
@@ -33,48 +33,41 @@ code required by consumers at runtime belongs in `dependencies`.
 
 ```sh
 bun install --frozen-lockfile
-bun run dev
-bun run build
-bun run build:demo
-bun run serve
-bun run test --runInBand
-bunx vue-tsc --noEmit
-bunx oxlint src demo tests
-bunx oxfmt --check .
-NPM_CONFIG_CACHE=/tmp/vue-event-creator-npm-cache npm pack --dry-run
+bun run dev             # demo dev server
+bun run build           # library bundle plus declarations
+bun run build:demo      # demo build into demo-dist
+bun run serve           # preview the demo build
+bun run format:check
+bun run typecheck       # vue-tsc over .ts and SFC templates
+bun run lint
+bun run test            # both Vitest projects
+bun run test:unit
+bun run test:browser
+bun run test:e2e        # Playwright, demo and packed-consumer projects
+bun run package:check   # publint, attw, pack dry run, packed consumer
+bun run release:check   # the full gate, also run by prepublishOnly
 ```
 
-Current baseline on 2026-09-04:
-
-- `bun run build` passes, with a Vite warning about loading ESM syntax from a
-  CommonJS package/config context.
-- `bun run serve` is stale: it previews `demo-app`, while the demo build writes
-  to `docs`.
-- `bun run test --runInBand` fails before collecting tests because TypeScript 7
-  is not compatible with the installed `ts-jest` path.
-- The working tree currently resolves TypeScript 7. `bunx tsc --noEmit` rejects
-  the removed `moduleResolution: "node"`/`node10` setting. The current
-  `vue-tsc --noEmit` command also cannot load the compiler API it expects. The v2
-  migration returns to TypeScript 6 and keeps `vue-tsc`; use
-  `moduleResolution: "bundler"` for the Vite library configuration.
-- repository-wide Oxlint scans generated `docs/assets` and reports many errors;
-  scope it to authored files until ignore rules and scripts are added.
-- Oxfmt check currently reports legacy formatting differences.
-
-Do not hide these failures or describe the baseline as green. `TODO-update.md`
-defines the intended replacement scripts and completion gates.
+Run the narrowest command while iterating and `bun run release:check` before
+proposing a release. Lint and format are scoped to authored sources by the
+scripts; do not run them over the repository root, which would pick up build
+output. Report failures as failures; never describe a red run as green.
 
 ## Repository map
 
 - `src/VueEventCreator.vue`: public component and app-level state wiring.
 - `src/components/`: calendar and event UI.
 - `src/hooks/`: calendar/event state logic.
-- `src/index.d.ts`: legacy type declarations; this is not a valid packaged entry
-  and is scheduled for replacement.
+- `src/index.ts`: typed public entry; packaged declarations are emitted from it.
+- `src/types/`: shared public prop, callback, and event-data types.
 - `src/styles/`: distributed CSS and public custom properties.
 - `demo/`: Vite-powered manual/demo application.
-- `tests/unit/`: Jest-era unit and component tests.
-- `docs/`: generated GitHub Pages output. Do not lint or hand-edit assets.
+- `tests/unit/`: Vitest suites; `vitest.config.ts` splits them into the Node
+  `unit` project and the Chromium `browser` project.
+- `tests/e2e/`: Playwright journeys for the demo and the packed consumer.
+- `tests/package-consumer/`: ESM fixture that installs and imports the tarball.
+- `demo-dist/`: generated demo build output (git-ignored). GitHub Pages is
+  deployed from it by `.github/workflows/pages.yml`; do not lint or hand-edit.
 - `vite.config.ts`: library build only.
 - `demo/vite.config.ts`: demo build and Pages base path.
 
@@ -98,7 +91,7 @@ defines the intended replacement scripts and completion gates.
 ## Change workflow
 
 1. Identify whether the change affects the public API or only internals.
-2. Add or migrate the smallest test that specifies the behavior.
+2. Add the smallest test that specifies the behavior.
 3. Keep pure date/state tests in the Node Vitest project. Put DOM interaction,
    focus, CSS, and browser-event behavior in the Vitest browser project.
 4. Use Playwright for complete consumer journeys, not for unit-level branches.

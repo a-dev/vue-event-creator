@@ -22,5 +22,5 @@ alpha, or draft-only toolchain.
 - [ ] Apply and document any TypeScript 7 compiler-option changes.
 - [ ] Run `.ts` and `.vue` type-checks, declaration generation, Node and browser
       tests, Playwright E2E, the library/demo builds, and packed-consumer checks.
-- [ ] Update `SPEC.md`, `AGENTS.md`, `TODO-update.md`, and the changelog after the
-      migration is complete.
+- [ ] Update `SPEC.md`, `AGENTS.md`, and the changelog after the migration is
+      complete.

@@ -8,6 +8,6 @@ export default defineConfig({
   },
   base: process.env.NODE_ENV === 'production' ? '/vue-event-creator/' : './',
   build: {
-    outDir: '../docs',
+    outDir: '../demo-dist',
   },
 });

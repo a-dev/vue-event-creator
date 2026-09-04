@@ -9,5 +9,5 @@
     "rootDir": "./src"
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],
-  "exclude": ["tests", "demo", "dist", "coverage", "docs"]
+  "exclude": ["tests", "demo", "dist", "coverage", "demo-dist"]
 }

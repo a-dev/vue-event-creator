@@ -1,8 +1,9 @@
 # Vue Event Creator specification
 
-Status: target contract for `vue-event-creator` 2.0. The current 1.0.4 behavior
-is the migration baseline, not a compatibility requirement where this document
-defines an intentional v2 change.
+Status: the contract for `vue-event-creator` 2.0, implemented in this
+repository. Version 1.0.4 was the migration baseline, not a compatibility
+requirement; intentional breaking changes are listed in `CHANGELOG.md` and
+`MIGRATION.md`.
 
 ## Purpose
 
@@ -144,8 +145,11 @@ actions must be keyboard operable and expose accessible names and state.
 - `src/lib/dayjs.ts`: date parsing, formatting, and internal date IDs.
 - `src/locales/`: built-in translations.
 - `src/styles/`: distributed component styles and public CSS variables.
-- `demo/`: development and documentation application.
-- `tests/unit/`: existing Jest-era behavior tests to migrate.
+- `demo/`: development and documentation application, also the E2E target.
+- `tests/unit/`: Vitest suites, split into a Node project for pure date/state
+  modules and a Chromium browser project for component and DOM behavior.
+- `tests/e2e/`: Playwright consumer journeys against the built demo.
+- `tests/package-consumer/`: ESM fixture that installs the packed tarball.
 
 State transitions should remain framework-light and testable separately from the
 DOM. Instance-specific dependencies should be provided through typed injection
@@ -178,6 +182,29 @@ library with `import` syntax. The package removes legacy `main`, `module`, and
 Vue is a peer dependency. Day.js is a runtime dependency. Build, declaration,
 package-lint, packed-consumer, and browser checks must pass before publication.
 
-Known deviations from this target contract are intentionally not normalized
-here; they are recorded and prioritized in `TODO-review.md`. The v2 migration
-sequence is in `TODO-update.md`.
+## Support matrix
+
+| Dependency      | Supported                                                   |
+| --------------- | ----------------------------------------------------------- |
+| Node            | 22.12 or newer                                              |
+| Package manager | Bun for development; any ESM-aware installer for consumers  |
+| Vue             | 3.5 or newer, as a peer dependency                          |
+| Module format   | ESM only; no CommonJS or UMD compatibility guarantee        |
+| Browsers        | Current Chromium, Firefox, and WebKit                       |
+
+## Quality gates
+
+Release readiness is defined by `release:check`, which runs in this order:
+format check, `vue-tsc` type-check, lint, Vitest (Node and Chromium projects),
+library build with declaration emit, package validation (`publint`,
+`attw --profile esm-only`, `npm pack --dry-run`, packed ESM consumer build), and
+Playwright end-to-end journeys. `prepublishOnly` runs the same gate, so a
+publication cannot bypass it.
+
+Pull requests run the Chromium subset. Firefox and WebKit run in scheduled and
+release workflows. Every behavior change carries a focused regression test at
+the narrowest useful level: Node project for pure date and state transitions,
+browser project for DOM, focus, and event-listener behavior, Playwright only for
+complete consumer journeys.
+
+Deferred work, including the move to TypeScript 7, is tracked in `TODO.md`.

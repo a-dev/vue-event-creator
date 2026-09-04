@@ -27,7 +27,7 @@
   "exclude": [
     "dist",
     "coverage",
-    "docs/assets",
+    "demo-dist",
     "playwright-report",
     "test-results",
     "tests/package-consumer"
