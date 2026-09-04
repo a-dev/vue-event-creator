@@ -151,6 +151,14 @@ State transitions should remain framework-light and testable separately from the
 DOM. Instance-specific dependencies should be provided through typed injection
 keys rather than process-global mutable singletons.
 
+Version 2 temporarily uses TypeScript 6, aliased as the project's `typescript`
+package, so Vue tooling can use the compiler API it supports. Public component
+props, callbacks, and event-data types live in ordinary `.ts` modules shared
+with the SFC implementation. `vue-tsc` type-checks both TypeScript and Vue SFC
+templates and emits declarations for the typed ESM entry. Moving to TypeScript 7
+is deferred until stable Vue language-tools support is available; the follow-up
+criteria are tracked in `TODO.md`.
+
 ## Distribution contract
 
 An npm release must contain:

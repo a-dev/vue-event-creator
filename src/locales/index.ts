@@ -1,32 +1,52 @@
-import { VecLanguageLocale } from '../index';
+import {
+  hasInjectionContext,
+  inject,
+  ref,
+  type InjectionKey,
+  type Ref,
+} from 'vue';
+import type { VecLanguageLocale } from '../types/public';
 
 import en from './_locales/en';
 import es from './_locales/es';
 import ru from './_locales/ru';
 
-const translates = {
-  messages: {
-    en,
-    ru,
-    es
-  }
+const messages = {
+  en,
+  ru,
+  es,
 };
 
-const i18n: { t: any } = { t: {} };
-const setI18n = (lang: VecLanguageLocale) => {
-  const messages: { [key: string]: string } = translates.messages[lang];
+export interface VecI18n {
+  language: Readonly<Ref<VecLanguageLocale>>;
+  t: (key: string) => string;
+}
 
-  i18n.t = (key: string) => {
-    if (messages[key]) {
-      return messages[key];
-    } else {
-      return `translation missing: '${key}'`;
-    }
-  };
+export const i18nKey: InjectionKey<VecI18n> = Symbol('vec-i18n');
+
+const legacyLanguage = ref<VecLanguageLocale>('en');
+
+export const createI18n = (
+  language: Readonly<Ref<VecLanguageLocale>>,
+): VecI18n => ({
+  language,
+  t(key: string) {
+    return (
+      messages[language.value][key as keyof (typeof messages)['en']] ??
+      `translation missing: '${key}'`
+    );
+  },
+});
+
+const legacyI18n = createI18n(legacyLanguage);
+
+const setI18n = (lang: VecLanguageLocale) => {
+  legacyLanguage.value = lang;
 };
 
 const useI18n = () => {
-  return i18n;
+  if (!hasInjectionContext()) return legacyI18n;
+  return inject(i18nKey, legacyI18n);
 };
 
 export { setI18n, useI18n };

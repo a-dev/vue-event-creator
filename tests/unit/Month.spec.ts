@@ -1,16 +1,17 @@
 import Month from '../../src/components/Month.vue';
 import { mount } from '@vue/test-utils';
 import { setDayJsLang } from '../../src/lib/dayjs';
+import { describe, expect, test } from 'vitest';
 
 const initialDayData = {
   id: 0,
   es_id: null,
   editing: false,
   choosing: false,
-  options: null
+  options: null,
 };
 
-const days = new Array(31).fill({}).map((_, index) => {
+const days = Array.from({ length: 31 }, (_, index) => {
   return { ...initialDayData, id: index + 1 };
 });
 
@@ -20,7 +21,7 @@ const monthData = {
   firstDayOfMonth: firstDayOfMonth,
   id: '202107',
   shift: firstDayOfMonth.getDay(),
-  days: days
+  days: days,
 };
 
 describe('Month is created and filled', () => {
@@ -28,18 +29,18 @@ describe('Month is created and filled', () => {
     setDayJsLang('en');
     const wrapper = mount(Month, {
       props: {
-        month: { ...monthData }
+        month: { ...monthData },
       },
       global: {
         provide: {
           choosingDatesState: {},
-          focusedEventState: {}
-        }
-      }
+          focusedEventState: {},
+        },
+      },
     });
     expect(wrapper.find('.vec-month__title').text()).toBe('July 2021');
     expect(wrapper.find('.vec-month__days').attributes('style')).toBe(
-      '--vec-month-first-day-shift: 5;'
+      '--vec-month-first-day-shift: 5;',
     );
   });
 });

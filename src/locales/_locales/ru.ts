@@ -10,7 +10,11 @@ export default {
   button_cancel: 'Отменить',
   button_save: 'Сохранить',
   button_remove: 'Удалить',
+  button_retry: 'Повторить',
+  calendar_switcher: 'Показать или скрыть календарь',
+  event_start_time: 'Время начала события',
+  event_finish_time: 'Время окончания события',
   guard_yes: 'Да',
   guard_no: 'Нет',
-  guard_prompt: 'Вы уверены, что хотите удалить событие?'
+  guard_prompt: 'Вы уверены, что хотите удалить событие?',
 };

@@ -11,7 +11,11 @@ export default {
   button_cancel: 'Cancelar',
   button_save: 'Ahorrar',
   button_remove: 'Suprimir',
+  button_retry: 'Reintentar',
+  calendar_switcher: 'Alternar calendario',
+  event_start_time: 'Hora de inicio del evento',
+  event_finish_time: 'Hora de finalización del evento',
   guard_yes: 'Sí',
   guard_no: 'No',
-  guard_prompt: '¿Estás segura de eliminar?'
+  guard_prompt: '¿Estás segura de eliminar?',
 };

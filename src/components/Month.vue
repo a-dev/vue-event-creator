@@ -16,29 +16,34 @@
 </template>
 <script lang="ts">
 import VecDay from './Day.vue';
-import { computed, PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 import dayjs from 'dayjs';
-import { VecMonthWithDates } from '../index';
+import type { VecMonthWithDates } from '../types/internal';
+import { useI18n } from '../locales';
 
 export default {
   name: 'VECMonth',
   components: {
-    VecDay
+    VecDay,
   },
   props: {
     month: {
       type: Object as PropType<VecMonthWithDates>,
-      required: true
-    }
+      required: true,
+    },
   },
   setup({ month }: { month: VecMonthWithDates }) {
+    const i18n = useI18n();
     const monthName = computed(() => {
-      const name = dayjs(month.firstDayOfMonth).format('MMMM YYYY');
+      const name = dayjs(month.firstDayOfMonth)
+        .locale(i18n.language.value)
+        .format('MMMM YYYY');
       return name.charAt(0).toUpperCase() + name.slice(1);
     });
 
     function shiftFirstDay() {
-      const isSundayFirst = dayjs.localeData().firstDayOfWeek() === 0;
+      const isSundayFirst =
+        dayjs().locale(i18n.language.value).localeData().firstDayOfWeek() === 0;
       const shift =
         month.shift === 0
           ? isSundayFirst
@@ -50,8 +55,8 @@ export default {
 
     return {
       monthName,
-      shiftFirstDay
+      shiftFirstDay,
     };
-  }
+  },
 };
 </script>

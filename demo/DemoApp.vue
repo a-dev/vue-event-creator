@@ -29,44 +29,75 @@
     <hr class="vec-demo__divider" />
     <div class="vec-demo__locales">
       <span class="vec-demo__locales-text">Choose language:</span>
-      <button :disabled="locale == 'en'" class="vec-demo__locales-button" @click="changeLang('en')">
-        En</button><button :disabled="locale == 'es'" class="vec-demo__locales-button" @click="changeLang('es')">
-        Es</button><button :disabled="locale == 'ru'" class="vec-demo__locales-button" @click="changeLang('ru')">
+      <button
+        :disabled="locale == 'en'"
+        class="vec-demo__locales-button"
+        @click="changeLang('en')"
+      >
+        En</button
+      ><button
+        :disabled="locale == 'es'"
+        class="vec-demo__locales-button"
+        @click="changeLang('es')"
+      >
+        Es</button
+      ><button
+        :disabled="locale == 'ru'"
+        class="vec-demo__locales-button"
+        @click="changeLang('ru')"
+      >
         Ru
       </button>
     </div>
   </div>
-  <vue-event-creator :key="locale" :language="locale" :saveEventFn="saveEventFn" :getEventsFn="getEventsFn"
-    :eventComponent="DemoEventComponent"></vue-event-creator>
+  <vue-event-creator
+    :language="locale"
+    :firstDate="firstDate"
+    :saveEventFn="saveEventFn"
+    :getEventsFn="getEventsFn"
+    :eventComponent="DemoEventComponent"
+  ></vue-event-creator>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import VueEventCreator from '../src/VueEventCreator.vue';
-import demoEvents from './demoEvents';
+import { createDemoEvents, E2E_REFERENCE_DATE } from './demoEvents';
 import DemoEventComponent from './DemoEventComponent.vue';
-import { VecLanguageLocale } from '../src';
+import type { VecLanguageLocale } from '../src';
 
 export default defineComponent({
   name: 'VECDemoAppComponent',
   components: {
-    VueEventCreator
+    VueEventCreator,
   },
   setup() {
     const locale = ref<VecLanguageLocale>('en');
+    const isE2E = new URLSearchParams(window.location.search).has('e2e');
+    const firstDate = isE2E ? new Date('2026-08-01T00:00:00.000Z') : new Date();
+    const referenceDate = isE2E ? E2E_REFERENCE_DATE : new Date();
+    let nextId = 100;
+    let rejectedOnce = false;
 
     const saveEventFn = async (event: any) => {
       console.log('saving data...', event);
-      // You don't need to check for event.id null. Here it's for demo purpose only.
-      // But your server must to create an id and response with it.
-      const id = event.id || Math.floor(Math.random() * 10000);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (isE2E && event.data?.title === 'Reject once' && !rejectedOnce) {
+        rejectedOnce = true;
+        return { error: 'Demo validation failed' };
+      }
+      const id = event.id ?? nextId++;
+      if (!isE2E) await new Promise((resolve) => setTimeout(resolve, 1000));
       const result = { ...event, id };
       return result;
     };
 
     const getEventsFn = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return demoEvents;
+      if (!isE2E) await new Promise((resolve) => setTimeout(resolve, 1000));
+      return createDemoEvents(referenceDate).map((event) => ({
+        ...event,
+        startsAt: new Date(event.startsAt),
+        finishesAt: new Date(event.finishesAt),
+        data: { ...event.data },
+      }));
     };
 
     const changeLang = (lang: VecLanguageLocale) => {
@@ -78,7 +109,7 @@ export default defineComponent({
       return {
         top: rand(80) + '%',
         left: rand(80) + '%',
-        'font-size': rand(25) + 'vw'
+        'font-size': rand(25) + 'vw',
       };
     };
 
@@ -88,9 +119,10 @@ export default defineComponent({
       saveEventFn,
       changeLang,
       locale,
-      phantomStyle
+      phantomStyle,
+      firstDate,
     };
-  }
+  },
 });
 </script>
 <style>

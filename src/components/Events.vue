@@ -18,32 +18,41 @@
 import VecDefaultTimeComponent from './DefaultTime.vue';
 import VecEventComponent from './Event.vue';
 
-import { defineComponent, inject, watch, nextTick, Ref } from 'vue';
-import { VecEvent, VecFocusedEventState } from '../index';
+import {
+  defineComponent,
+  inject,
+  watch,
+  nextTick,
+  type Component,
+  type PropType,
+  type Ref,
+} from 'vue';
+import type { VecEvent, VecFocusedEventState } from '../types/internal';
+import type { EditEventFn, RemoveEventFn, SaveEventFn } from '../types/public';
 
 export default defineComponent({
   name: 'VECEvents',
   components: {
     VecDefaultTimeComponent,
-    VecEventComponent
+    VecEventComponent,
   },
   props: {
     editEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<EditEventFn>,
+      required: true,
     },
     saveEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<SaveEventFn>,
+      required: true,
     },
     removeEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<RemoveEventFn>,
+      required: true,
     },
     eventComponent: {
-      type: Object,
-      required: true
-    }
+      type: [Object, Function] as PropType<Component>,
+      default: undefined,
+    },
   },
   setup() {
     const events = inject('eventsState') as Ref<VecEvent[]>;
@@ -55,19 +64,19 @@ export default defineComponent({
 
       nextTick(() => {
         const eventCardElem = document.getElementById(
-          `vec-es-id-${next.es_id}`
+          `vec-es-id-${next.es_id}`,
         ) as HTMLDivElement | undefined;
         eventCardElem?.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
-          inline: 'nearest'
+          inline: 'nearest',
         });
       });
     });
 
     return {
-      events
+      events,
     };
-  }
+  },
 });
 </script>

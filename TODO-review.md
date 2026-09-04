@@ -9,14 +9,15 @@ planned for an ESM-only `2.0.0`; v1 module-format compatibility is not a goal.
 
 ## Verification snapshot
 
-| Check                                   | Result                                                                                                              |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `bun run build`                         | Passes; Vite warns that the TS config is ESM in a CommonJS package context.                                         |
-| `bun run test --runInBand`              | Fails; 10/10 suites stop before test collection because TypeScript 7 is incompatible with `ts-jest`.                |
-| `bunx vue-tsc --noEmit`                 | Fails before checking source because `vue-tsc` expects a TypeScript compiler API path not exported by TypeScript 7. |
-| `bunx oxlint .`                         | Fails; generated `docs/assets` dominates the output, plus authored-source/test findings.                            |
-| `bunx oxfmt --check .`                  | Fails on 44 legacy-authored/generated files.                                                                        |
-| `npm pack --dry-run --json` after build | Produces seven files; JS and CSS are present, but declarations are absent.                                          |
+| Check                                   | Result                                                                                               |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `bun run build`                         | Passes; Vite warns that the TS config is ESM in a CommonJS package context.                          |
+| `bun run test --runInBand`              | Fails; 10/10 suites stop before test collection because TypeScript 7 is incompatible with `ts-jest`. |
+| `bunx tsc --noEmit`                     | Runs TypeScript 7, then rejects the removed `moduleResolution: "node"`/`node10` option.              |
+| `bunx vue-tsc --noEmit`                 | Fails because `vue-tsc` expects a JavaScript compiler API path not exported by TypeScript 7.         |
+| `bunx oxlint .`                         | Fails; generated `docs/assets` dominates the output, plus authored-source/test findings.             |
+| `bunx oxfmt --check .`                  | Fails on 44 legacy-authored/generated files.                                                         |
+| `npm pack --dry-run --json` after build | Produces seven files; JS and CSS are present, but declarations are absent.                           |
 
 ## P1 — Release and correctness blockers
 
@@ -56,13 +57,18 @@ Plan: choose one stable CSS subpath, set `build.lib.cssFileName`, expose it in
 Evidence: `package.json:41-69`, `jest.config.js:1-17`.
 
 Jest 30 is combined with `@vue/vue3-jest`/`ts-jest` 29 and TypeScript 7.
-`vue-tsc` 3.3 also cannot use the TypeScript 7 compiler API. No tests or Vue
-type-checks currently execute.
+The tsconfig still uses a module-resolution mode removed in TypeScript 7, and
+`vue-tsc` 3.3 cannot use the TypeScript 7 compiler API. No tests or meaningful
+source type-checks currently execute.
 
 Impact: dependency updates can ship despite runtime/type regressions.
 
-Plan: temporarily use the TypeScript 6 compatibility package, migrate Jest to
-matched Vitest 5 packages, and make type-check/test required gates.
+Plan: return to TypeScript 6 through the
+`typescript: npm:@typescript/typescript6` alias, migrate the tsconfig to bundler
+resolution, keep `vue-tsc` as the SFC-aware type-check and declaration path, and
+migrate Jest to matched Vitest 5 packages. Defer TypeScript 7 until the stable
+Vue language-tools release supports it; track that upgrade separately in
+`TODO.md`.
 
 ### R4. CI targets obsolete branches and a deleted package manager
 

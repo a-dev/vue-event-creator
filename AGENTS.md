@@ -5,7 +5,7 @@
 `vue-event-creator` is a published Vue 3 component library, not an application.
 The current work targets version 2, published as ESM only. Treat the npm tarball
 and its public component/types/CSS API as the product. Read `SPEC.md` before
-changing runtime behavior and consult both TODO files before modernization work.
+changing runtime behavior and consult the TODO files before modernization work.
 
 The repository currently contains staged, user-owned migration work. Preserve
 unrelated changes and inspect `git status` before editing.
@@ -14,6 +14,11 @@ unrelated changes and inspect `git status` before editing.
 
 - Package manager: Bun (`bun.lock` is the intended lockfile).
 - Runtime baseline for the planned Vite 8/Vitest 5 stack: Node 22.12 or newer.
+- TypeScript baseline: TypeScript 6, installed through the
+  `typescript: npm:@typescript/typescript6` alias for Vue tooling compatibility.
+- SFC type-checker and declaration emitter: `vue-tsc`.
+- TypeScript 7 is deferred until stable Vue language-tools support; see
+  `TODO.md`.
 - Framework: Vue 3.
 - Library/demo build: Vite.
 - Distribution target: ESM only; do not add UMD or CommonJS output.
@@ -47,8 +52,11 @@ Current baseline on 2026-09-04:
   to `docs`.
 - `bun run test --runInBand` fails before collecting tests because TypeScript 7
   is not compatible with the installed `ts-jest` path.
-- `bunx vue-tsc --noEmit` fails because current `vue-tsc` expects the TypeScript
-  JavaScript compiler API that TypeScript 7 no longer exports.
+- The working tree currently resolves TypeScript 7. `bunx tsc --noEmit` rejects
+  the removed `moduleResolution: "node"`/`node10` setting. The current
+  `vue-tsc --noEmit` command also cannot load the compiler API it expects. The v2
+  migration returns to TypeScript 6 and keeps `vue-tsc`; use
+  `moduleResolution: "bundler"` for the Vite library configuration.
 - repository-wide Oxlint scans generated `docs/assets` and reports many errors;
   scope it to authored files until ignore rules and scripts are added.
 - Oxfmt check currently reports legacy formatting differences.
@@ -105,7 +113,13 @@ Create fresh state and wrappers per test; no test may depend on execution order.
 ## Build and publication rules
 
 - Vite transpilation is not type-checking; a successful build is insufficient.
-- Generate declarations into `dist` from the same public entry used for JS.
+- Type-check authored TypeScript and Vue SFC templates with TypeScript 6,
+  `vue-tsc`, and the `bundler` module-resolution mode.
+- Generate declarations from the typed `src/index.ts` boundary with `vue-tsc`.
+  Verify that the emitted default component and public types resolve from the
+  packed artifact.
+- Keep component props and callback contracts in shared `.ts` types used by both
+  the SFC implementation and its explicit public `DefineComponent` type.
 - Keep Vue external and declare it as a peer dependency.
 - Build only the Vite `es` format and mark the package `type: "module"`.
 - Keep every `package.json` entry aligned with an emitted file and an explicit
@@ -122,7 +136,9 @@ Create fresh state and wrappers per test; no test may depend on execution order.
 - Relevant focused tests pass.
 - Full Node and browser suites pass.
 - Playwright smoke journeys pass when user-visible behavior changes.
-- Type-check, lint, and format checks pass on authored sources.
+- TypeScript 6 and `vue-tsc` type-check the authored `.ts`/`.vue` graph, SFC
+  templates, and public entry.
+- Lint and format checks pass on authored sources.
 - Library and demo builds pass.
 - `npm pack --dry-run` contains every declared entry and no source-only path is
   referenced by package metadata.

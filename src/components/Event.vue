@@ -1,11 +1,12 @@
 <template>
   <div
+    ref="eventElement"
     :key="forceUpdateKey"
     :id="`vec-es-id-${event.es_id}`"
     class="vec-event"
     :class="{
       'vec-event_focused': isFocused,
-      'vec-event_editing': isEventEditing
+      'vec-event_editing': isEventEditing,
     }"
   >
     <div v-if="loader" class="vec-event-loader__wrapper">
@@ -25,12 +26,14 @@
       <input
         class="vec-event__time-input"
         type="time"
+        :aria-label="i18n.t('event_start_time')"
         v-model="eventTimeStartsAt"
       />
       <span>{{ i18n.t('time_till') }}&nbsp;</span>
       <input
         class="vec-event__time-input"
         type="time"
+        :aria-label="i18n.t('event_finish_time')"
         v-model="eventTimeFinishesAt"
       />
       <button
@@ -41,7 +44,7 @@
         {{ i18n.t('set_default_time') }}
       </button>
     </div>
-    <template v-if="eventComponent && Object.keys(eventComponent).length">
+    <template v-if="eventComponent">
       <component
         :is="eventComponent"
         :isEventEditing="isEventEditing"
@@ -49,7 +52,7 @@
         @update:eventData="eventData = $event"
       ></component>
     </template>
-    <div v-if="serverError" class="vec-event__server-error">
+    <div v-if="serverError" class="vec-event__server-error" role="alert">
       {{ serverError }}
     </div>
     <footer class="vec-event__footer">
@@ -79,11 +82,13 @@
 import {
   defineComponent,
   ref,
-  PropType,
+  type Component,
+  type PropType,
   computed,
   inject,
   watch,
-  nextTick
+  nextTick,
+  onMounted,
 } from 'vue';
 import {
   VecEvent,
@@ -91,44 +96,53 @@ import {
   VecDefaultTime,
   VecFocusedEventState,
   VecCalendarState,
-  VecGuardAlertState
-} from '../index';
+  VecGuardAlertState,
+  toEditableEvent,
+  toInternalEvent,
+  toSavedEvent,
+} from '../types/internal';
+import type {
+  EditEventFn,
+  EditableEvent,
+  RemoveEventFn,
+  SaveEventFn,
+} from '../types/public';
 
 import { useI18n } from '../locales';
 import { useEventActions } from '../hooks/useEventActions';
 import dayjs, {
   formatDate,
   setTimeToDate,
-  makeEsIdFromStartsAt
+  makeEsIdFromStartsAt,
 } from '../lib/dayjs';
 import VecGuardAlert from './GuardAlert.vue';
 
 export default defineComponent({
   name: 'VECEvent',
   components: {
-    VecGuardAlert
+    VecGuardAlert,
   },
   props: {
     event: {
       type: Object as PropType<VecEvent>,
-      required: true
+      required: true,
     },
     saveEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<SaveEventFn>,
+      required: true,
     },
     editEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<EditEventFn>,
+      required: true,
     },
     removeEventFn: {
-      type: Function,
-      required: true
+      type: Function as PropType<RemoveEventFn>,
+      required: true,
     },
     eventComponent: {
-      type: Object,
-      default: () => {}
-    }
+      type: [Object, Function] as PropType<Component>,
+      default: undefined,
+    },
   },
   setup(props) {
     const i18n = useI18n();
@@ -137,7 +151,7 @@ export default defineComponent({
     const calendarState = inject('calendarState') as VecCalendarState;
     const defaultTimeState = inject('defaultTimeState')! as VecDefaultTime;
     const focusedEventState = inject(
-      'focusedEventState'
+      'focusedEventState',
     )! as VecFocusedEventState;
 
     const { removeEventAction, toggleEventEditAction, updateEventInTheState } =
@@ -145,16 +159,21 @@ export default defineComponent({
 
     const eventTimeStartsAt = ref(dayjs(props.event.startsAt).format('HH:mm'));
     const eventTimeFinishesAt = ref(
-      dayjs(props.event.finishesAt).format('HH:mm')
+      dayjs(props.event.finishesAt).format('HH:mm'),
     );
     const isEventEditing = ref(props.event.editing);
+    const eventElement = ref<HTMLElement>();
     const isFocused = ref(false);
 
     const loader = ref(false);
     const serverError = ref('');
 
     const formattedDate = computed(() => {
-      return formatDate(props.event.startsAt!, props.event.finishesAt!);
+      return formatDate(
+        props.event.startsAt!,
+        props.event.finishesAt!,
+        i18n.language.value,
+      );
     });
 
     const formattedTime = computed(() => {
@@ -181,74 +200,74 @@ export default defineComponent({
       );
     });
 
-    interface ErrorObj {
-      error: string;
-    }
-
     const eventData = ref(props.event?.data);
-    const saveEvent = () => {
+    const saveEvent = async () => {
       loader.value = true;
-      const event = {
-        id: props.event.id === undefined ? null : props.event.id,
+      serverError.value = '';
+      const event: EditableEvent = {
+        id: props.event.id,
         startsAt: setTimeToDate(props.event.startsAt!, eventTimeStartsAt.value),
         finishesAt: setTimeToDate(
           props.event.finishesAt!,
-          eventTimeFinishesAt.value
+          eventTimeFinishesAt.value,
         ),
-        data: eventData.value
-      } as VecEvent;
-      props
-        .saveEventFn(event)
-        .then((updatedEvent: undefined | (VecEvent & ErrorObj)) => {
-          if (updatedEvent && updatedEvent.error) {
-            serverError.value = updatedEvent.error;
-            throw new Error(updatedEvent.error);
-          }
+        data: eventData.value,
+      };
+      try {
+        const updatedEvent = await props.saveEventFn(event);
+        if ('error' in updatedEvent) {
+          throw new Error(updatedEvent.error);
+        }
 
-          if (!updatedEvent || !updatedEvent!.id) {
-            throw new Error('Something went wrong: the event was not saved');
-          }
+        if (updatedEvent.id === null || updatedEvent.id === undefined) {
+          throw new Error('Something went wrong: the event was not saved');
+        }
 
-          if (
-            +updatedEvent.startsAt !== +event.startsAt ||
-            +updatedEvent.finishesAt !== +event.finishesAt
-          ) {
-            const formattedDate = (date: Date) => {
-              return dayjs(date).format('YYYY-MM-DD, HH:mm');
-            };
-            const errorText = `Something went wrong: dates was changed. Expected: ${formattedDate(
-              event.startsAt
-            )} and ${formattedDate(
-              event.finishesAt
-            )}. Received: ${formattedDate(
-              updatedEvent.startsAt
-            )}, ${formattedDate(updatedEvent.finishesAt)}`;
+        if (
+          +updatedEvent.startsAt !== +event.startsAt ||
+          +updatedEvent.finishesAt !== +event.finishesAt
+        ) {
+          const formattedDate = (date: Date) => {
+            return dayjs(date).format('YYYY-MM-DD, HH:mm');
+          };
+          const errorText = `Something went wrong: dates was changed. Expected: ${formattedDate(
+            event.startsAt,
+          )} and ${formattedDate(event.finishesAt)}. Received: ${formattedDate(
+            updatedEvent.startsAt,
+          )}, ${formattedDate(updatedEvent.finishesAt)}`;
 
-            serverError.value = errorText;
-            throw new Error(errorText);
-          }
+          throw new Error(errorText);
+        }
 
-          updatedEvent.es_id = makeEsIdFromStartsAt(updatedEvent.startsAt);
-          updateEventInTheState(updatedEvent, updatedEvent);
-          toggleEventEditAction(updatedEvent, { editing: false });
+        const internalEvent = toInternalEvent(
+          updatedEvent,
+          makeEsIdFromStartsAt(updatedEvent.startsAt),
+        );
+        updateEventInTheState(props.event, internalEvent);
+        toggleEventEditAction(internalEvent, { editing: false });
 
-          focusedEventState.value = null;
-          loader.value = false;
-          isEventEditing.value = false;
-        })
-        .catch((err: Error) => {
-          loader.value = false;
-          isEventEditing.value = true;
-          console.error(err);
-        });
+        focusedEventState.value = null;
+        isEventEditing.value = false;
+      } catch (error) {
+        const err =
+          error instanceof Error
+            ? error
+            : new Error('Unable to save the event');
+        serverError.value = err.message;
+        isEventEditing.value = true;
+        console.error(err);
+      } finally {
+        loader.value = false;
+      }
     };
 
     const editEvent = () => {
       props
-        .editEventFn()
+        .editEventFn(toEditableEvent(props.event))
         .then(() => {
           toggleEventEditAction(props.event, { editing: true });
           isEventEditing.value = true;
+          focusEditor();
         })
         .catch((err: Error) => {
           console.error(err);
@@ -256,6 +275,26 @@ export default defineComponent({
     };
 
     const forceUpdateKey = ref(Math.random());
+
+    const focusEditor = () => {
+      void nextTick(() => {
+        const controls = Array.from(
+          eventElement.value?.querySelectorAll<HTMLElement>(
+            'input, textarea, select, button',
+          ) ?? [],
+        );
+        const consumerControl = controls.find(
+          (control) =>
+            !control.closest('.vec-event__set-time') &&
+            !control.closest('.vec-event__footer'),
+        );
+        (consumerControl ?? controls[0])?.focus();
+      });
+    };
+
+    onMounted(() => {
+      if (isEventEditing.value) focusEditor();
+    });
 
     const cancelEditing = () => {
       eventTimeStartsAt.value = dayjs(props.event.startsAt).format('HH:mm');
@@ -275,7 +314,9 @@ export default defineComponent({
         await confirm;
         if (confirm === 'yes') {
           props
-            .removeEventFn(props.event)
+            .removeEventFn(
+              toSavedEvent({ ...props.event, id: props.event.id! }),
+            )
             .then(() => {
               removeEventAction(props.event);
             })
@@ -315,8 +356,9 @@ export default defineComponent({
       guardAlertState,
       guardAlertConfirm,
       serverError,
-      forceUpdateKey
+      forceUpdateKey,
+      eventElement,
     };
-  }
+  },
 });
 </script>

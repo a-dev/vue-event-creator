@@ -5,12 +5,14 @@
       <span>{{ i18n.t('time_from') }}&nbsp;</span>
       <input
         type="time"
+        :aria-label="`${i18n.t('default_time_title')} ${i18n.t('time_from')}`"
         v-model="defaultTimeState.startsAtTime"
         class="vec-event__time-input vec-events-dt__input"
       />
       <span>{{ i18n.t('time_till') }}&nbsp;</span>
       <input
         type="time"
+        :aria-label="`${i18n.t('default_time_title')} ${i18n.t('time_till')}`"
         v-model="defaultTimeState.finishesAtTime"
         class="vec-event__time-input vec-events-dt__input"
       />
@@ -23,7 +25,7 @@
 <script lang="ts">
 import { defineComponent, inject } from 'vue';
 import { useI18n } from '../locales';
-import { VecDefaultTime } from '../index';
+import type { VecDefaultTime } from '../types/internal';
 
 export default defineComponent({
   name: 'VECDefaultTime',
@@ -34,8 +36,8 @@ export default defineComponent({
 
     return {
       i18n,
-      defaultTimeState
+      defaultTimeState,
     };
-  }
+  },
 });
 </script>

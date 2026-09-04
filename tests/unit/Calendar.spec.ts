@@ -1,13 +1,18 @@
 import VueEventCreator from '../../src/VueEventCreator.vue';
-import { mount, flushPromises } from '@vue/test-utils';
+import { enableAutoUnmount, mount, flushPromises } from '@vue/test-utils';
+import { afterEach, describe, expect, test } from 'vitest';
+import { userEvent } from 'vitest/browser';
+
+enableAutoUnmount(afterEach);
 
 describe('Calendar data initialize', () => {
   test('Calendar is created with determent first date', async () => {
     const wrapper = mount(VueEventCreator, {
+      attachTo: document.body,
       props: {
         // Started at February 2014 (leap-year)
-        firstDate: new Date('February 24, 2014 00:00:00')
-      }
+        firstDate: new Date('February 24, 2014 00:00:00'),
+      },
     });
     await flushPromises();
 
@@ -20,9 +25,10 @@ describe('Calendar data initialize', () => {
 
   test('Clicks on buttons which add +3 months before and after', async () => {
     const wrapper = mount(VueEventCreator, {
+      attachTo: document.body,
       props: {
-        firstDate: new Date('February 24, 2014 00:00:00')
-      }
+        firstDate: new Date('February 24, 2014 00:00:00'),
+      },
     });
     await flushPromises();
 
@@ -35,8 +41,8 @@ describe('Calendar data initialize', () => {
     expect(buttonBefore.text()).toBe('More before');
     expect(buttonAfter.text()).toBe('More after');
 
-    await buttonBefore.trigger('click');
-    await buttonAfter.trigger('click');
+    await userEvent.click(buttonBefore.element);
+    await userEvent.click(buttonAfter.element);
 
     expect(wrapper.vm.calendarState.months.length).toBe(9);
 

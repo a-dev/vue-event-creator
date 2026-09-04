@@ -24,3 +24,7 @@ coverage
 .history/
 
 dist/
+.tmp/
+.vitest/
+playwright-report/
+test-results/

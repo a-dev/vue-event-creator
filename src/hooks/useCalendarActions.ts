@@ -6,8 +6,8 @@ import {
   VecEventsState,
   VecChoosingDatesState,
   VecFocusedEventState,
-  VecDefaultTime
-} from '../index';
+  VecDefaultTime,
+} from '../types/internal';
 import { buildEventOnThisDays, sortEvents } from './useEventActions';
 
 export function getRangeBetweenEventDates(startsAt: Date, finishesAt: Date) {
@@ -21,13 +21,13 @@ export function makeFormatDayDD(dayId: string | number) {
 export function setValueToDate(
   calendarState: VecCalendarState,
   date: Date | VecDateId | null,
-  options: object
+  options: object,
 ) {
   const ids =
     date instanceof Date
       ? {
           monthId: dayjs(date).format('YYYYMM'),
-          dayId: dayjs(date).format('DD')
+          dayId: dayjs(date).format('DD'),
         }
       : date!;
   const monthIdx = calendarState.months.findIndex((m) => m.id === ids.monthId);
@@ -41,7 +41,7 @@ export function setValueToDate(
 export function setValueToEventDates(
   calendarState: VecCalendarState,
   event: VecEvent,
-  options: { [key: string]: null | string | boolean | number }
+  options: { [key: string]: null | string | boolean | number },
 ) {
   const range = getRangeBetweenEventDates(event.startsAt!, event.finishesAt!);
   for (let d = 0; d <= range; d++) {
@@ -52,24 +52,24 @@ export function setValueToEventDates(
 
 export function removeEventFromCalendar(
   calendarState: VecCalendarState,
-  event: VecEvent
+  event: VecEvent,
 ) {
   const range = getRangeBetweenEventDates(event.startsAt!, event.finishesAt!);
   for (let d = 0; d <= range; d++) {
     const day = dayjs(event.startsAt!).add(d, 'day').toDate();
     setValueToDate(calendarState, day, {
       es_id: null,
-      editing: false
+      editing: false,
     });
   }
 }
 
 export function nullifyChoosingDatesState(
-  choosingDatesState: VecChoosingDatesState
+  choosingDatesState: VecChoosingDatesState,
 ) {
   Object.assign(choosingDatesState, {
     startsAtId: null,
-    finishesAtId: null
+    finishesAtId: null,
   });
 }
 
@@ -78,14 +78,14 @@ export function useCalendarActions(
   calendarState: VecCalendarState,
   eventsState: VecEventsState,
   choosingDatesState: VecChoosingDatesState,
-  focusedEventState: VecFocusedEventState
+  focusedEventState: VecFocusedEventState,
 ) {
   /*
   HELPERS
   */
   const isDaysInRangeAlreadyScheduled = (
     startsAt: Date,
-    finishesAt: Date
+    finishesAt: Date,
   ): boolean => {
     const rangeDays = () => {
       const datesArray = [];
@@ -118,7 +118,7 @@ export function useCalendarActions(
 
     setValueToEventDates(calendarState, event, {
       es_id: makeEsIdFromStartsAt(event.startsAt),
-      editing: event.editing || false
+      editing: event.editing || false,
     });
   };
 
@@ -128,8 +128,8 @@ export function useCalendarActions(
         calendarState,
         choosingDatesState[date as keyof VecChoosingDatesState],
         {
-          choosing: false
-        }
+          choosing: false,
+        },
       );
     }
   };
@@ -146,7 +146,7 @@ export function useCalendarActions(
   const setEventOnChoosingDays = (defaultTimeState: VecDefaultTime): void => {
     const event: VecEvent = buildEventOnThisDays(
       choosingDatesState,
-      defaultTimeState
+      defaultTimeState,
     );
     cleanChooseOptionOnDates();
     nullifyChoosingDatesState(choosingDatesState);
@@ -161,6 +161,6 @@ export function useCalendarActions(
 
   return {
     calendarFillEvents,
-    setEventOnChoosingDays
+    setEventOnChoosingDays,
   };
 }

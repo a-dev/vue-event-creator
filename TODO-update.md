@@ -1,6 +1,6 @@
 # Version 2 modernization plan
 
-Status: proposed v2 plan; no migration steps in this file have been implemented.
+Status: phases 0 and 1 implemented; phases 2 through 5 are pending.
 
 ## Version 2 decisions
 
@@ -27,27 +27,35 @@ Target development dependencies:
   `@vitest/coverage-v8@^5`;
 - `@vue/test-utils@^2.5` for low-level component mounting;
 - `@playwright/test@^1.62` for end-to-end journeys;
-- `vue-tsc@^3.3` with a compatible TypeScript compiler;
+- `typescript: npm:@typescript/typescript6@^6.0.2`, keeping the dependency name
+  expected by Vue tooling;
+- `vue-tsc@^3.3` for TypeScript/SFC type-checking and declaration generation;
 - Oxlint and Oxfmt as development-only tools.
 
-TypeScript 7 is installed, but `vue-tsc` currently depends on the TypeScript
-JavaScript compiler API and cannot run against it. Until Vue language tools add
-native TypeScript 7 support, alias the maintained TypeScript 6 compiler package
-as `typescript` (for example,
-`typescript: "npm:@typescript/typescript6@^6.0.2"`). Revisit TypeScript 7 in a
-separate upgrade rather than weakening type-checking.
+TypeScript 6 is the temporary v2 baseline because current stable `vue-tsc`
+cannot consume the TypeScript 7 compiler API. Install `@typescript/typescript6`
+through the `typescript` npm alias so `vue-tsc` and other ecosystem tools resolve
+the compatible compiler. Keep `moduleResolution: "bundler"` for the Vite-based
+library. Type-check `.ts` files and Vue SFC templates with `vue-tsc`, and use it
+to generate the published declarations.
+
+Reconsider TypeScript 7 no earlier than October 2026 and only after stable Vue
+language-tools support is complete. That deferred migration and its upstream
+dependency are tracked in `TODO.md`.
 
 ## Phase 0 — Freeze and make the baseline reproducible
 
-- [ ] Preserve or commit the existing Bun/Oxlint/Oxfmt dependency update as its
+- [x] Preserve or commit the existing Bun/Oxlint/Oxfmt dependency update as its
       own change before starting the test migration.
-- [ ] Add `packageManager: "bun@1.3.14"` and `engines.node: ">=22.12.0"`.
-- [ ] Keep only `bun.lock`; remove Yarn assumptions from scripts and CI.
-- [ ] Move `oxlint` and `oxfmt` from `dependencies` to `devDependencies`.
-- [ ] Pin the TypeScript 6 compatibility alias and prove `vue-tsc --noEmit`
-      starts before changing source types.
-- [ ] Add scripts for `typecheck`, `lint`, `format`, and `format:check`.
-- [ ] Scope lint/format to authored files and exclude `dist`, `coverage`,
+- [x] Add `packageManager: "bun@1.4.1"` and `engines.node: ">=22.12.0"`.
+- [x] Keep only `bun.lock`; remove Yarn assumptions from scripts and CI.
+- [x] Move `oxlint` and `oxfmt` from `dependencies` to `devDependencies`.
+- [x] Alias `typescript` to `npm:@typescript/typescript6@^6.0.2`, retain
+      `vue-tsc@^3.3`, and change `moduleResolution` to `bundler`.
+- [x] Add `vue-tsc --noEmit` as the type-check command so `.ts` code and Vue SFC
+      templates are checked by the same compatible toolchain.
+- [x] Add scripts for `typecheck`, `lint`, `format`, and `format:check`.
+- [x] Scope lint/format to authored files and exclude `dist`, `coverage`,
       Playwright reports, test results, and generated `docs/assets`.
 
 Acceptance: a clean install is deterministic, type-check reaches source code,
@@ -55,32 +63,36 @@ and checks no longer process generated bundles.
 
 ## Phase 1 — Repair the npm package contract
 
-- [ ] Replace the declaration-only `src/index.d.ts` with a real `src/index.ts`
+- [x] Replace the declaration-only `src/index.d.ts` with a real `src/index.ts`
       public entry that default-exports the component and exports public API types.
-- [ ] Separate consumer types from internal calendar state types. Make callback
+- [x] Separate consumer types from internal calendar state types. Make callback
       props generic over consumer event data and avoid bare `Function`, `object`, and
       `any` types.
-- [ ] Point Vite library mode at `src/index.ts`, set `formats: ['es']`, and choose
+- [x] Point Vite library mode at `src/index.ts`, set `formats: ['es']`, and choose
       a stable ESM filename such as `dist/index.js`.
-- [ ] Generate declarations into `dist` with
-      `vue-tsc --declaration --emitDeclarationOnly` or a compatible Vue declaration
-      plugin.
-- [ ] Choose one CSS subpath, set `build.lib.cssFileName` to emit it, and use that
+- [x] Define public props, callbacks, events, and generic event data in `.ts`
+      modules consumed by both `VueEventCreator.vue` and `src/index.ts`.
+- [x] Explicitly type the component export in `src/index.ts` so consumers never
+      receive the permissive type from `shims-vue.d.ts`.
+- [x] Generate declarations from the typed public entry with `vue-tsc`, using
+      `--declaration --emitDeclarationOnly`; include accurate Vue component props
+      and public types.
+- [x] Choose one CSS subpath, set `build.lib.cssFileName` to emit it, and use that
       exact path in `package.json` and `README.md`.
-- [ ] Add `type: "module"` and an ESM-only `exports` map with root `types` and
+- [x] Add `type: "module"` and an ESM-only `exports` map with root `types` and
       `import` conditions plus a CSS subpath.
-- [ ] Remove `main`, `module`, and `unpkg`; do not publish `require`, UMD, or CJS
+- [x] Remove `main`, `module`, and `unpkg`; do not publish `require`, UMD, or CJS
       conditions.
-- [ ] Add `sideEffects` metadata for CSS and confirm Vue remains external and a
+- [x] Add `sideEffects` metadata for CSS and confirm Vue remains external and a
       peer dependency. Keep Day.js as the only runtime dependency unless it is
       deliberately bundled.
-- [ ] Reduce `files` to the built artifact and required documentation; no package
+- [x] Reduce `files` to the built artifact and required documentation; no package
       field may point back into excluded `src`.
-- [ ] Add `prepack` or `prepublishOnly` to run the release gate.
-- [ ] Add `publint`, `attw --pack .`, and `npm pack --dry-run` checks.
-- [ ] Create a tiny TypeScript/Vite ESM consumer fixture that installs the
+- [x] Add `prepack` or `prepublishOnly` to run the release gate.
+- [x] Add `publint`, `attw --pack .`, and `npm pack --dry-run` checks.
+- [x] Create a tiny TypeScript/Vite ESM consumer fixture that installs the
       produced tarball and imports the default component, public types, and CSS.
-- [ ] Run `attw --pack . --profile esm-only` and document that CommonJS
+- [x] Run `attw --pack . --profile esm-only` and document that CommonJS
       `require()` has no compatibility guarantee.
 
 Acceptance: all declared paths exist in the tarball, ESM imports load, types
@@ -165,8 +177,9 @@ save/remove journey in a real browser.
       `bun install --frozen-lockfile`.
 - [ ] Install the Chromium binary/dependencies required by the shared Playwright
       provider.
-- [ ] Gate in this order: format check, lint, type-check, unit tests, browser
-      tests, build, package lint/types, packed-consumer build, Playwright E2E.
+- [ ] Gate in this order: format check, TypeScript 6/`vue-tsc` type-check, lint,
+      unit tests, browser tests, build, package lint/types, packed-consumer build,
+      and Playwright E2E.
 - [ ] Split fast static/unit checks from browser/package jobs and upload reports
       only on failure.
 - [ ] Add a release workflow with npm provenance and protected npm publishing
@@ -215,7 +228,9 @@ manager and commands used locally; publication cannot bypass the full gate.
 - [Playwright web server configuration](https://playwright.dev/docs/test-webserver)
 - [Playwright test configuration](https://playwright.dev/docs/test-configuration)
 - [Vue Test Utils installation](https://test-utils.vuejs.org/installation/)
-- [TypeScript 7 compatibility guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)
+- [TypeScript 7 announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)
+- [TypeScript 7 and Vue language-tools tracking issue](https://github.com/vuejs/language-tools/issues/5381)
+- [Rolldown declaration generators](https://github.com/sxzz/rolldown-plugin-dts)
 - [npm package fields](https://docs.npmjs.com/files/package.json/)
 - [publint](https://publint.dev/docs/)
 - [Are the Types Wrong CLI](https://www.npmjs.com/package/@arethetypeswrong/cli)

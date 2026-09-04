@@ -26,14 +26,13 @@ To create one-day event you need to make double click on the date. To create the
 * Dayjs (you don't have to preinstall it)
 
 ## Installation
-npm
-```
+
+```sh
 npm install vue-event-creator
 ```
-yarn
-```
-yarn add vue-event-creator
-```
+
+Version 2 is ESM only. Use it through an ESM-aware runtime or bundler; CommonJS
+`require()` and direct script-tag loading are not supported.
 
 ## Using
 
@@ -55,7 +54,7 @@ Component with initialization and server's actions:
 </template>
 <script>
 import VueEventCreator from 'vue-event-creator';
-import 'vue-event-creator/dist/styles.css'; // CSS
+import 'vue-event-creator/style.css';
 
 import EventDataComponent from './EventDataComponent.vue'; // The component with additional data (*optional)
 import axios from 'axios'; // For example I use axios for sending data to a server

@@ -8,17 +8,20 @@
   box-sizing: border-box;
   width: 100%;
   height: 100%;
+  padding: 0;
 
   cursor: pointer;
   user-select: none;
   text-align: center;
 
   color: var(--vec-color-text-secondary);
+  background: transparent;
   border: 2px solid var(--vec-color-transparent);
   border-radius: 50%;
 
   font-size: var(--vec-fs-xs);
   line-height: 1;
+  font-family: inherit;
 }
 
 .vec-day_weekend {

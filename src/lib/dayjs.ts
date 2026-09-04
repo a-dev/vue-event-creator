@@ -3,28 +3,33 @@ import localeData from 'dayjs/plugin/localeData';
 import 'dayjs/locale/es.js';
 import 'dayjs/locale/ru.js';
 
+dayjs.extend(localeData);
+
 const setDayJsLang = (lang: string) => {
   dayjs.locale(lang);
-  dayjs.extend(localeData);
-
-  dayjs.localeData();
 };
 
-const formatDate = (startsAt: Date, finishesAt: Date) => {
+const formatDate = (
+  startsAt: Date,
+  finishesAt: Date,
+  locale: string = dayjs.locale(),
+) => {
+  const localizedStart = dayjs(startsAt).locale(locale);
+  const localizedFinish = dayjs(finishesAt).locale(locale);
   let formattedDate;
-  if (dayjs(startsAt).isSame(finishesAt, 'day')) {
-    formattedDate = dayjs(startsAt).format('DD MMMM YYYY');
-  } else if (dayjs(startsAt).isSame(finishesAt, 'month')) {
+  if (localizedStart.isSame(localizedFinish, 'day')) {
+    formattedDate = localizedStart.format('DD MMMM YYYY');
+  } else if (localizedStart.isSame(localizedFinish, 'month')) {
     formattedDate =
-      dayjs(startsAt).format('DD–') + dayjs(finishesAt).format('DD MMMM YYYY');
-  } else if (dayjs(startsAt).isSame(finishesAt, 'year')) {
+      localizedStart.format('DD–') + localizedFinish.format('DD MMMM YYYY');
+  } else if (localizedStart.isSame(localizedFinish, 'year')) {
     formattedDate =
-      dayjs(startsAt).format('DD MMMM – ') +
-      dayjs(finishesAt).format('DD MMMM YYYY');
+      localizedStart.format('DD MMMM – ') +
+      localizedFinish.format('DD MMMM YYYY');
   } else {
     formattedDate =
-      dayjs(startsAt).format('DD MMMM YYYY – ') +
-      dayjs(finishesAt).format('DD MMMM YYYY');
+      localizedStart.format('DD MMMM YYYY – ') +
+      localizedFinish.format('DD MMMM YYYY');
   }
   return formattedDate;
 };
