@@ -62,11 +62,25 @@ jobs:
           echo "npm $actual satisfies >=$required."
       # No NPM_TOKEN: npm exchanges the job's OIDC identity for short-lived
       # credentials, and provenance is attached automatically.
+      #
+      # `npm stage publish`, not `npm publish`: OIDC proves which workflow is
+      # publishing, never that a maintainer intended this release. Staging
+      # defers proof-of-presence, so the package keeps its "require 2FA"
+      # setting and a maintainer approves the staged version before it goes
+      # public. Publishing directly would need "Allow npm publish" on the npm
+      # trusted publisher, which this package deliberately leaves off.
+      #
       # `prepublishOnly` runs `release:check` (format, types, lint, unit and
-      # browser tests, build, package checks, E2E), so publication cannot skip
-      # the gate even when invoked manually.
-      - name: Publish
-        run: npm publish --access public
+      # browser tests, build, package checks, E2E) for staged publishes too, so
+      # publication cannot skip the gate even when invoked manually.
+      - name: Stage publish
+        run: npm stage publish --access public
+      - name: Explain the pending approval
+        run: |
+          echo "::notice::Version staged, not yet public. Approve it with" \
+               "\`npm stage list vue-event-creator\` then" \
+               "\`npm stage approve <stage-id>\` (2FA required), or from the" \
+               "package page on npmjs.com."
       - name: Upload failure reports
         if: failure()
         uses: actions/upload-artifact@v4

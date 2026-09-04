@@ -301,9 +301,23 @@ tests, the library build, package checks (`publint`, `attw --profile esm-only`,
 2. Update `CHANGELOG.md` and bump `version` in `package.json`.
 3. Tag the commit as `v<version>` and push the tag.
 4. The release workflow re-runs ordinary CI plus the Firefox and WebKit E2E
-   suites, then publishes from a protected `npm-publish` environment with npm
+   suites, then stages the release from the `npm-publish` environment with npm
    provenance. `prepublishOnly` runs `release:check` again, so publication
    cannot bypass the gate.
+5. Approve the staged version to make it public. The workflow is authenticated
+   by OIDC trusted publishing, which proves which workflow published but not
+   that a maintainer intended the release, so the final step is a deliberate
+   human one requiring 2FA:
+
+   ```sh
+   npm stage list vue-event-creator   # find the pending stage id
+   npm stage view <stage-id>          # inspect what CI built
+   npm stage approve <stage-id>       # 2FA; this publishes it
+   ```
+
+   The npm package page offers the same approve/reject step. Until approved,
+   the version is not installable, and `npm stage reject <stage-id>` discards
+   it.
 
 Firefox and WebKit E2E also run on a daily schedule, off the pull-request path.
 
