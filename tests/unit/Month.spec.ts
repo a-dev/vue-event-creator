@@ -1,6 +1,5 @@
 import Month from '../../src/components/Month.vue';
 import { mount } from '@vue/test-utils';
-import { setDayJsLang } from '../../src/lib/dayjs';
 import { describe, expect, test } from 'vitest';
 
 const initialDayData = {
@@ -26,7 +25,6 @@ const monthData = {
 
 describe('Month is created and filled', () => {
   test('The month is July 2021 and the first day is Friday', () => {
-    setDayJsLang('en');
     const wrapper = mount(Month, {
       props: {
         month: { ...monthData },

@@ -1,29 +1,46 @@
 # Vue Event Creator
 
-The library Vue Event Creator helps to schedule events in easy way. It’s very convenient for companies that have a lot of similar events, first of all repeated events like training courses, sport events, seminars. For example, we have the event that occurs twice a week for a month. The title and description are the same, just the dates are different. In general it takes enough time to fill up that info (and it’s boring), Vue Event Creator fasts the process. And yes, the interface looks nice. 
+Vue Event Creator is a Vue 3 component for scheduling events on a calendar. It
+is aimed at admin interfaces where many similar events — training courses, sport
+events, seminars — differ only by their dates. Pick a start date and a finish
+date on the calendar, adjust the time, fill in your own fields, and save.
 
-By the way, you can customize the dates of event and add to them additional properties that suit your aim: title, content, select, tags and so on.
+Upgrading from version 1? Read [MIGRATION.md](MIGRATION.md) first: version 2 is
+ESM only and changes several public contracts.
 
 ## Features
 
-* Localization: English, Espanol, Русский, custom.
-* Two columns view.
-* To focus the event card by click.
-* Default time control.
-* In-place editing of the event additional data.
-* Foolproof: user has to save a new event and has to confirm removing an event that already saved through API.
-* Small size: less than 11 kb (gzip with styles)
+- Built-in interface locales: English, Español, Русский.
+- Two-column layout: calendar and event cards, with a switcher on small screens.
+- Focus an event card by clicking one of its calendar days.
+- Default time control for newly created events.
+- In-place editing of your own event data through a component you provide.
+- Confirmation before removing an event that was already saved through your API.
+- Keyboard accessible: every day and control is a real focusable button.
 
 ## Demo
 
-### 👉 [Check out demo](https://a-dev.github.io/vue-event-creator/) 👈
+### 👉 [Check out the demo](https://a-dev.github.io/vue-event-creator/) 👈
 
-To create one-day event you need to make double click on the date. To create the event for several days you make one click on start date and second click on the last date of the event. That's it. The card of new event will appear in the right column.
+Click one date to start an event and a second date to finish it; click the same
+date twice for a one-day event. The card for the new event appears in the right
+column and stays a draft until you save it.
 
-## Dependencies
+## Support matrix
 
-* Vue 3
-* Dayjs (you don't have to preinstall it)
+| Item             | Supported                                                          |
+| ---------------- | ------------------------------------------------------------------ |
+| Module format    | ESM only. No CommonJS, UMD, or `<script>` build is published.       |
+| Node.js          | 22.12 or newer (`engines.node`), for bundlers and tooling.          |
+| Vue              | `^3.x` as a peer dependency; developed against 3.5.                 |
+| Runtime deps     | Day.js only. Vue stays external.                                    |
+| Browsers         | Evergreen Chromium, Firefox, and WebKit. E2E runs on all three.     |
+| TypeScript       | Declarations resolve under `bundler`/`node16` ESM resolution.       |
+| Package managers | Any npm-compatible client; this repository is developed with Bun.   |
+
+The component relies on CSS custom properties, CSS grid, and
+`<input type="time">`. Browsers without those (notably Internet Explorer) are
+not supported.
 
 ## Installation
 
@@ -31,109 +48,134 @@ To create one-day event you need to make double click on the date. To create the
 npm install vue-event-creator
 ```
 
-Version 2 is ESM only. Use it through an ESM-aware runtime or bundler; CommonJS
-`require()` and direct script-tag loading are not supported.
+Version 2 is ESM only. Use it through an ESM-aware runtime or bundler;
+CommonJS `require()`, UMD, and direct script-tag loading are not supported and
+carry no compatibility guarantee.
 
-## Using
+```js
+import VueEventCreator from 'vue-event-creator';
+import 'vue-event-creator/style.css';
+```
 
-You can look at [demo app code](https://github.com/a-dev/vue-event-creator/blob/main/demo).
-Component with initialization and server's actions:
+The stylesheet is published only at the `vue-event-creator/style.css` subpath.
+Nothing imports it for you — the component renders unstyled without it.
+
+## Usage
+
+The full example lives in the
+[demo app](https://github.com/a-dev/vue-event-creator/blob/main/demo). A minimal
+host component wires the callbacks that talk to your API:
 
 ```vue
 <template>
-  <div class="vec-wrapper">
-    <vue-event-creator
-      language="es"
-      :saveEventFn="saveEventFn"
-      :getEventsFn="getEventsFn"
-      :removeEventFn="removeEventFn"
-      :eventComponent="EventData"
-    >
-    </vue-event-creator>
-  </div>
+  <vue-event-creator
+    language="en"
+    :firstDate="firstDate"
+    :getEventsFn="getEventsFn"
+    :saveEventFn="saveEventFn"
+    :editEventFn="editEventFn"
+    :removeEventFn="removeEventFn"
+    :eventComponent="EventDataComponent"
+  />
 </template>
-<script>
+
+<script setup lang="ts">
 import VueEventCreator from 'vue-event-creator';
+import type {
+  EditableEvent,
+  SavedEvent,
+} from 'vue-event-creator';
 import 'vue-event-creator/style.css';
 
-import EventDataComponent from './EventDataComponent.vue'; // The component with additional data (*optional)
-import axios from 'axios'; // For example I use axios for sending data to a server
+import EventDataComponent from './EventDataComponent.vue';
 
-export default {
-  component: {
-    VueEventCreator
-  },
-  setup(props) {
-    // First off all — get all existed events
-    const getEventsFn = async () => {
-      /*
-        Fetch from API or take events from props.
-        You have to return an array of objects with these keys:
-          id: id of your content in a database
-          startsAt: start date and time (javascript Date format)
-          finishesAt: finish date and time (javascript Date format)
-          data: *not required, any additional properties
-      */
-      const events = props.data.map((event) => {
-        // Some logic to prepare the data if the response from the backend is not compliant
-        return {
-          id: event.id,
-          startsAt: new Date(event.starts_at),
-          finishesAt: new Date(event.finishes_at),
-          data: {
-            title: event.tile,
-            text: event.text
-          }
-        };
-      });
-      return events;
-    };
+interface CourseData extends Record<string, unknown> {
+  title: string;
+  text: string;
+}
 
-    const saveEventFn = async (data) => {
-      /*
-        Send new or changed event to a server and get a response with a new/updated data from it.
-        As example I use FormData and two api points.
-        You can make it whatever you want, just remember that you have two type of operations: creating and updating event in this one function.
-      */
-      const formData = new FormData();
-      formData.set('event[started_at]', data.startsAt);
-      formData.set('event[finishes_at]', data.finishesAt);
-      formData.set('event[title]', data.data?.title);
-      formData.set('event[text]', data.data?.text);
+const firstDate = new Date();
 
-      const isUpdating = !!data.id; // if an event is not saved in a server, than it doesn't have the id (id === null).
+const getEventsFn = async (): Promise<SavedEvent<CourseData>[]> => {
+  const response = await fetch('/api/events.json');
+  const events = await response.json();
 
-      return axios({
-        url: isUpdating ? `/api/events/${data.id}.json` : '/api/events/create',
-        method: isUpdating ? 'patch' : 'post',
-        data: formData
-      })
-        .then(({ data }) => data)
-        .catch(console.error);
-    };
+  // Dates must be Date instances; a JSON API returns strings.
+  return events.map((event) => ({
+    id: event.id,
+    startsAt: new Date(event.starts_at),
+    finishesAt: new Date(event.finishes_at),
+    data: { title: event.title, text: event.text },
+  }));
+};
 
-    const removeEventFn = async () => {
-      /*
-        Remove event from server. 200 OK in return
-      */
-      axios
-        .delete(`/api/events/remove/${data.id}.json`)
-        .then()
-        .catch(console.error);
-    };
+const saveEventFn = async (event: EditableEvent<CourseData>) => {
+  // `event.id` is null for a draft that has never been saved.
+  const isUpdate = event.id !== null;
+  const response = await fetch(
+    isUpdate ? `/api/events/${event.id}.json` : '/api/events',
+    {
+      method: isUpdate ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        starts_at: event.startsAt.toISOString(),
+        finishes_at: event.finishesAt.toISOString(),
+        ...event.data,
+      }),
+    },
+  );
 
-    return {
-      getEventsFn,
-      saveEventFn,
-      removeEventFn,
-      eventDataComponent
-    };
+  if (!response.ok) {
+    // Either shape works: return an error object, or throw.
+    return { error: 'The event could not be saved' };
   }
+
+  const saved = await response.json();
+  return {
+    id: saved.id,
+    startsAt: new Date(saved.starts_at),
+    finishesAt: new Date(saved.finishes_at),
+    data: { title: saved.title, text: saved.text },
+  };
+};
+
+const editEventFn = async (event: EditableEvent<CourseData>) => {
+  // Optional preparation before the card switches into edit mode.
+  // Reject to block editing and show the reason on the card.
+};
+
+const removeEventFn = async (event: SavedEvent<CourseData>) => {
+  const response = await fetch(`/api/events/${event.id}.json`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('The event could not be removed');
 };
 </script>
 ```
 
-Additional component
+### Props
+
+| Prop             | Type                       | Default                                        | Description                                                             |
+| ---------------- | -------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------- |
+| `language`       | `'en' \| 'es' \| 'ru'`     | `'en'`                                         | Interface locale. Reactive, and scoped to this instance.                |
+| `firstDate`      | `Date`                     | `new Date()`                                   | First month shown. Reactive: changing it rebuilds the calendar.         |
+| `monthsOnPage`   | `number`                   | `3`                                            | Months rendered initially. Reactive.                                    |
+| `defaultTime`    | `DefaultTime`              | `{ startsAtTime: '10:00', finishesAtTime: '17:00' }` | Time applied to newly created events. Reactive.                   |
+| `getEventsFn`    | `GetEventsFn<TData>`       | resolves `[]`                                  | Loads existing events once on mount, and again on retry.                |
+| `saveEventFn`    | `SaveEventFn<TData>`       | rejects                                        | Persists a draft or an edited event.                                    |
+| `editEventFn`    | `EditEventFn<TData>`       | resolves                                       | Runs before a card enters edit mode; receives the event.                |
+| `removeEventFn`  | `RemoveEventFn<TData>`     | resolves                                       | Removes an event that has an `id`.                                      |
+| `eventComponent` | `Component`                | `undefined`                                    | Your component for the event's own data.                                |
+
+All callback props are generic over `TData`, the shape of your `data` object.
+The public types are generated from the source and exported from the package
+root: `EventData`, `SavedEvent`, `EditableEvent`, `SaveError`, `EventId`,
+`DefaultTime`, `LanguageLocale`, `GetEventsFn`, `SaveEventFn`, `EditEventFn`,
+`RemoveEventFn`, and `VueEventCreatorProps`.
+
+### The event data component
+
+`eventComponent` receives two props and emits one event:
 
 ```vue
 <template>
@@ -146,77 +188,83 @@ Additional component
     <div>{{ text }}</div>
   </template>
 </template>
-<script>
+
+<script setup lang="ts">
 import { ref } from 'vue';
 
-export default {
-  props: {
-    /*
-      You need to set two props: 
-      'eventData' contains data properties of the event (additional data),
-      'isEventEditing' which will changes when a user clicks the 'Edit' button of the event card.
-    */
-    eventData: {
-      type: Object,
-      default: () => {}
-    },
-    isEventEditing: {
-      type: Boolean,
-      default: false
-    }
-  },
-  setup(props, { emit }) {
-    const title = ref(props.eventData?.title);
-    const text = ref(props.eventData?.text);
+const props = defineProps<{
+  eventData?: { title?: string; text?: string };
+  isEventEditing: boolean;
+}>();
+const emit = defineEmits<{
+  'update:eventData': [{ title?: string; text?: string }];
+}>();
 
-    const sendData = () => {
-      /*
-        You have to fire the event 'update:eventData' with data properties to update it on the parent component from where this data will sends to a server.
-        And it's the good place to make a validation.
-      */
-      emit('update:eventData', {
-        title: title.value,
-        text: text.value
-      });
-    };
+const title = ref(props.eventData?.title);
+const text = ref(props.eventData?.text);
 
-    /* 
-      If you need to add any default data for an event, just create request to a server and load it. Don't forget to emit data, like this:
-      sendData();
-    */
-
-    return {
-      sendData
-    };
-  }
-};
+// Emit on every change; the emitted object is what reaches `saveEventFn`.
+const sendData = () => emit('update:eventData', {
+  title: title.value,
+  text: text.value,
+});
 </script>
 ```
 
-### Server error
+The component never mutates the objects you hand it. Loaded events are cloned
+into internal models, and callbacks receive fresh `Date` instances.
 
-If the server makes an error (include validation) just send a response object with an error property.
+## Error handling
 
-``` javascript
-{ error: 'Something bad happens' }
-```
+There is one error contract, and every failure is shown in the interface rather
+than only logged.
 
-This error appearing to the user above the card's footer.
+| Failure                     | What the user sees                                                   |
+| --------------------------- | -------------------------------------------------------------------- |
+| `getEventsFn` rejects       | An alert replacing the calendar, with a **Retry** button.            |
+| Loaded events are invalid   | The same alert, describing the invalid dates or the overlap.         |
+| `saveEventFn` returns `{ error }` or rejects | The message above the card footer; the card stays in edit mode with the entered values preserved. |
+| The saved event's dates differ from the submitted ones | A message naming both date ranges; the local event is not overwritten. |
+| `editEventFn` rejects       | The message on the card; the card stays read-only.                   |
+| `removeEventFn` rejects     | The message on the card; the event is kept.                          |
 
-### Start edit action
+`saveEventFn` may signal a failure either by resolving with
+`{ error: 'message' }` or by rejecting. A save that resolves without an `id`
+(`null` or `undefined`) is treated as a failure; `id` of `0` is a valid id.
 
-If you want making some prepare before edit an event's card, use function editEventFn() inside the main component.
+While a save, edit, or removal is in flight the card shows a loader and ignores
+further attempts, so a callback is never invoked twice for one action.
 
-``` javascript
-const editEventFn = async () => {
-  // Here some code
-  return;
-};
-```
+## Dates, time zones, and overlap
 
-### Styles
+- **Local time.** Dates are interpreted, formatted, and keyed in the browser's
+  local time zone. A calendar day is the local calendar date, so the same
+  `Date` can land on different days for users in different zones. Send absolute
+  timestamps (for example ISO 8601 with an offset) to your API and convert them
+  to `Date` in `getEventsFn`.
+- **Times are hours and minutes.** The time controls set hours and minutes on
+  the event's dates; seconds and milliseconds come from the underlying date.
+- **One event per calendar date.** A date can belong to at most one event.
+  `getEventsFn` results are validated on load: an invalid date, an event that
+  finishes before it starts, or two events sharing a calendar date make the
+  component show the load error instead of a partly wrong calendar. Selecting a
+  range that covers an already scheduled day is ignored rather than creating a
+  conflicting event.
+- **Reversed selections are corrected.** Clicking a later date first and an
+  earlier one second creates the event over that range in the right order.
 
-Override css custom properties on .vec-body class
+## Localization
+
+`language` accepts `en`, `es`, or `ru`. It is reactive and scoped per instance:
+several calendars can be mounted at once with different languages, and changing
+`language` re-renders that instance only. Weekday order and month names follow
+the Day.js locale — Sunday starts the week in `en`, Monday in `es` and `ru`.
+Custom locales are not part of the public API in version 2.
+
+## Styles
+
+Import the stylesheet once, then override the CSS custom properties on the
+`.vec-body` class:
 
 ```vue
 <style>
@@ -229,7 +277,35 @@ Override css custom properties on .vec-body class
 </style>
 ```
 
-Full list of variables [look here](https://github.com/a-dev/vue-event-creator/blob/main/src/styles/vars.css).
+The full list of variables is in
+[src/styles/vars.css](https://github.com/a-dev/vue-event-creator/blob/main/src/styles/vars.css).
+
+## Development
+
+```sh
+bun install
+bun run dev            # demo app
+bun run test           # unit (Node) and component (Chromium) tests
+bun run test:e2e       # Playwright journeys against the demo and packed package
+bun run release:check  # the full gate, exactly as CI runs it
+```
+
+`release:check` runs format check, `vue-tsc` type-check, lint, unit and browser
+tests, the library build, package checks (`publint`, `attw --profile esm-only`,
+`npm pack --dry-run`, and a packed ESM consumer build), and the E2E suite.
+
+## Release process
+
+1. Land the change on `main`; pull-request CI runs the static, unit, browser,
+   build, package, and Chromium E2E gates.
+2. Update `CHANGELOG.md` and bump `version` in `package.json`.
+3. Tag the commit as `v<version>` and push the tag.
+4. The release workflow re-runs ordinary CI plus the Firefox and WebKit E2E
+   suites, then publishes from a protected `npm-publish` environment with npm
+   provenance. `prepublishOnly` runs `release:check` again, so publication
+   cannot bypass the gate.
+
+Firefox and WebKit E2E also run on a daily schedule, off the pull-request path.
 
 ## License
 

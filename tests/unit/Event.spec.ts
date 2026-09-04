@@ -5,8 +5,6 @@ import {
   VecEvent,
   VecFocusedEventState,
 } from '../../src/types/internal';
-import { setDayJsLang } from '../../src/lib/dayjs';
-import { setI18n } from '../../src/locales/index';
 
 import { useCalendarActions } from '../../src/hooks/useCalendarActions';
 
@@ -24,9 +22,6 @@ import { userEvent } from 'vitest/browser';
 enableAutoUnmount(afterEach);
 
 describe('Edit, save and remove an event', () => {
-  setI18n('en');
-  setDayJsLang('en');
-
   let defaultProps: {
     event: VecEvent;
     saveEventFn: SaveEventFn;
@@ -81,14 +76,18 @@ describe('Edit, save and remove an event', () => {
       },
     });
     expect(
-      wrapper.find('#vec-es-id-20210902').classes('vec-event_focused'),
+      wrapper
+        .find('[data-vec-event-id="20210902"]')
+        .classes('vec-event_focused'),
     ).toBe(false);
 
     focusedEventState.value = { es_id: 20210902 };
     await nextTick();
 
     expect(
-      wrapper.find('#vec-es-id-20210902').classes('vec-event_focused'),
+      wrapper
+        .find('[data-vec-event-id="20210902"]')
+        .classes('vec-event_focused'),
     ).toBe(true);
   });
 
@@ -116,7 +115,7 @@ describe('Edit, save and remove an event', () => {
       },
     });
 
-    const eventElem = wrapper.get('#vec-es-id-20210902');
+    const eventElem = wrapper.get('[data-vec-event-id="20210902"]');
     const day = calendarState.months[2].days[1];
     const editButton = wrapper.findAll('.vec-button')[1];
 
@@ -202,10 +201,6 @@ describe('Edit, save and remove an event', () => {
       };
     };
 
-    const consoleErrorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-
     const wrapper = mount(VECEvent, {
       attachTo: document.body,
       props: { ...defaultProps, saveEventFn },
@@ -217,7 +212,6 @@ describe('Edit, save and remove an event', () => {
     const editButton = wrapper.findAll('.vec-button')[1];
     await userEvent.click(editButton.element);
     await userEvent.click(editButton.element);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(new Error(errorText));
     expect(wrapper.get('.vec-event__server-error').text()).toBe(errorText);
 
     expect(eventsState.value[0].startsAt).not.toEqual(
@@ -234,10 +228,6 @@ describe('Edit, save and remove an event', () => {
       };
     };
 
-    const consoleErrorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
-
     const wrapper = mount(VECEvent, {
       attachTo: document.body,
       props: { ...defaultProps, saveEventFn },
@@ -249,15 +239,11 @@ describe('Edit, save and remove an event', () => {
     const editButton = wrapper.findAll('.vec-button')[1];
     await userEvent.click(editButton.element);
     await userEvent.click(editButton.element);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(new Error(errorText));
     expect(wrapper.get('.vec-event__server-error').text()).toBe(errorText);
     expect(editButton.text()).toBe('Save');
   });
 
   test('Keeps edited input and stops loading when saving rejects', async () => {
-    const consoleErrorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
     const wrapper = mount(VECEvent, {
       attachTo: document.body,
       props: {
@@ -280,9 +266,6 @@ describe('Edit, save and remove an event', () => {
     await userEvent.click(editButton.element);
     await flushPromises();
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      new Error('The network is unavailable'),
-    );
     expect(wrapper.get('.vec-event__server-error').text()).toBe(
       'The network is unavailable',
     );
@@ -291,6 +274,91 @@ describe('Edit, save and remove an event', () => {
       wrapper.findAll<HTMLInputElement>('input[type="time"]')[0].element.value,
     ).toBe('11:30');
     expect(editButton.text()).toBe('Save');
+  });
+
+  test('Shows an error and stays read-only when editEventFn rejects', async () => {
+    const wrapper = mount(VECEvent, {
+      attachTo: document.body,
+      props: {
+        ...defaultProps,
+        editEventFn: async () => {
+          throw new Error('Editing is locked by another user');
+        },
+      },
+      global: {
+        provide: { ...defaultProvide },
+      },
+    });
+
+    const editButton = wrapper.findAll('.vec-button')[1];
+    await userEvent.click(editButton.element);
+    await flushPromises();
+
+    expect(wrapper.get('.vec-event__server-error').text()).toBe(
+      'Editing is locked by another user',
+    );
+    expect(editButton.text()).toBe('Edit');
+    expect(wrapper.find('.vec-event-loader__wrapper').exists()).toBe(false);
+  });
+
+  test('Shows an error and keeps the event when removeEventFn rejects', async () => {
+    const eventsState = ref(createEventsWithDates(['2021-09-02:2021-09-05']));
+    const wrapper = mount(VECEvent, {
+      attachTo: document.body,
+      props: {
+        ...defaultProps,
+        removeEventFn: async () => {
+          throw new Error('The event is referenced elsewhere');
+        },
+      },
+      global: {
+        provide: { ...defaultProvide, eventsState },
+      },
+    });
+
+    await userEvent.click(wrapper.findAll('.vec-button')[0].element);
+    await userEvent.click(
+      wrapper.findAll('.vec-guard-alert__buttons button')[1].element,
+    );
+    await flushPromises();
+
+    expect(wrapper.get('.vec-event__server-error').text()).toBe(
+      'The event is referenced elsewhere',
+    );
+    expect(wrapper.find('.vec-guard-alert').exists()).toBe(false);
+    expect(eventsState.value).toHaveLength(1);
+    expect(wrapper.find('.vec-event-loader__wrapper').exists()).toBe(false);
+  });
+
+  test('Ignores a second save while the first one is still running', async () => {
+    let resolveSave: (() => void) | undefined;
+    const saveEventFn = vi.fn<SaveEventFn>(async () => {
+      await new Promise<void>((resolve) => {
+        resolveSave = resolve;
+      });
+      return { error: 'Rejected after the test released it' };
+    });
+    const wrapper = mount(VECEvent, {
+      attachTo: document.body,
+      props: { ...defaultProps, saveEventFn },
+      global: {
+        provide: { ...defaultProvide },
+      },
+    });
+
+    const editButton = wrapper.findAll('.vec-button')[1];
+    await userEvent.click(editButton.element);
+    await userEvent.click(editButton.element);
+    await vi.waitFor(() =>
+      expect(wrapper.find('.vec-event-loader__wrapper').exists()).toBe(true),
+    );
+
+    await userEvent.click(editButton.element, { force: true });
+    expect(saveEventFn).toHaveBeenCalledTimes(1);
+
+    resolveSave?.();
+    await flushPromises();
+    expect(saveEventFn).toHaveBeenCalledTimes(1);
   });
 
   test('Show cancel button if the event is editing', async () => {
@@ -334,7 +402,7 @@ describe('Edit, save and remove an event', () => {
         provide: { ...defaultProvide, calendarState, eventsState },
       },
     });
-    const eventElem = wrapper.find('#vec-es-id-20210902');
+    const eventElem = wrapper.find('[data-vec-event-id="20210902"]');
     const day = calendarState.months[2].days[1];
     const removeButton = wrapper.findAll('.vec-button')[0];
     expect(eventElem.exists()).toBe(true);

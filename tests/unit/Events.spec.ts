@@ -5,8 +5,6 @@ import {
   VecEvent,
   VecFocusedEventState,
 } from '../../src/types/internal';
-import { setDayJsLang } from '../../src/lib/dayjs';
-import { setI18n } from '../../src/locales/index';
 import { July2021CalendarState, createEventsWithDates } from './utils';
 
 import Events from '../../src/components/Events.vue';
@@ -16,9 +14,6 @@ import { userEvent } from 'vitest/browser';
 enableAutoUnmount(afterEach);
 
 describe('List of events with the default time component: edit & remove', () => {
-  setI18n('en');
-  setDayJsLang('en');
-
   const mountEvents = () =>
     mount(Events, {
       attachTo: document.body,
@@ -53,7 +48,7 @@ describe('List of events with the default time component: edit & remove', () => 
 
   test('Change the event time to default', async () => {
     const wrapper = mountEvents();
-    const event = wrapper.find('#vec-es-id-20210902');
+    const event = wrapper.find('[data-vec-event-id="20210902"]');
     expect(event.exists()).toBe(true);
     expect(event.find('.vec-event__dates').text()).toBe(
       '02–05 September 2021, 11:40–18:20',
@@ -74,7 +69,7 @@ describe('List of events with the default time component: edit & remove', () => 
 
   test('Remove event', async () => {
     const wrapper = mountEvents();
-    const event = wrapper.find('#vec-es-id-20210902');
+    const event = wrapper.find('[data-vec-event-id="20210902"]');
     const events = wrapper.findAll('.vec-event');
     expect(events).toHaveLength(2);
 
@@ -87,7 +82,7 @@ describe('List of events with the default time component: edit & remove', () => 
     const yesButton = event.findAll('.vec-guard-alert__buttons .vec-button')[1];
     await userEvent.click(yesButton.element);
 
-    expect(wrapper.find('#vec-es-id-20210902').exists()).toBe(false);
+    expect(wrapper.find('[data-vec-event-id="20210902"]').exists()).toBe(false);
     expect(wrapper.findAll('.vec-event')).toHaveLength(1);
   });
 });

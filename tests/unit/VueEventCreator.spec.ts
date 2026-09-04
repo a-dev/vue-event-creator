@@ -5,7 +5,7 @@ import VueEventCreator from '../../src/VueEventCreator.vue';
 import dayjs from '../../src/lib/dayjs';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import type { SavedEvent } from '../../src/types/public';
+import type { RemoveEventFn, SavedEvent } from '../../src/types/public';
 
 enableAutoUnmount(afterEach);
 
@@ -168,9 +168,7 @@ describe('Load components', () => {
       data: Object.freeze({ title: 'Zero ID event' }),
     };
     const events = Object.freeze([original]);
-    const removeEventFn = vi.fn<
-      (event: SavedEvent<{ title: string }>) => Promise<void>
-    >(async () => {});
+    const removeEventFn = vi.fn<RemoveEventFn>(async () => {});
     const wrapper = mount(VueEventCreator, {
       attachTo: document.body,
       props: {
@@ -222,8 +220,59 @@ describe('Load components', () => {
     expect(wrapper.get('.vec-event').classes()).toContain('vec-event_editing');
   });
 
-  test('Removes pending body listeners when unmounted', async () => {
-    const removeListener = vi.spyOn(document.body, 'removeEventListener');
+  test('Rebuilds the calendar when firstDate or monthsOnPage change', async () => {
+    const wrapper = mount(VueEventCreator, {
+      props: {
+        firstDate: new Date('2021-07-01T00:00:00.000Z'),
+        monthsOnPage: 2,
+      },
+    });
+    await flushPromises();
+
+    expect(wrapper.findAll('.vec-month')).toHaveLength(2);
+    expect(wrapper.get('.vec-month__title').text()).toBe('July 2021');
+
+    await wrapper.setProps({ monthsOnPage: 4 });
+    expect(wrapper.findAll('.vec-month')).toHaveLength(4);
+
+    await wrapper.setProps({ firstDate: new Date('2022-03-01T00:00:00.000Z') });
+    expect(wrapper.get('.vec-month__title').text()).toBe('March 2022');
+    expect(wrapper.findAll('.vec-month')).toHaveLength(4);
+  });
+
+  test('Keeps event focus scoped to the instance that owns the day', async () => {
+    const getEventsFn = async () => [
+      {
+        id: 1,
+        startsAt: new Date('2021-07-05T10:00:00.000Z'),
+        finishesAt: new Date('2021-07-05T17:00:00.000Z'),
+      },
+    ];
+    const props = {
+      firstDate: new Date('2021-07-01T00:00:00.000Z'),
+      getEventsFn,
+    };
+    const first = mount(VueEventCreator, { attachTo: document.body, props });
+    const second = mount(VueEventCreator, { attachTo: document.body, props });
+    await flushPromises();
+
+    const focusedDayOf = (wrapper: typeof first) =>
+      wrapper.findAll('.vec-day_focused');
+
+    // Native clicks: two full calendars do not both fit in the viewport, and
+    // the assertion is about the document listener, not pointer mechanics.
+    (first.get('[data-es-id="20210705"]').element as HTMLElement).click();
+    await vi.waitFor(() => expect(focusedDayOf(first)).toHaveLength(1));
+
+    // The same date exists in the other instance; its day must not keep the
+    // first instance focused, and clicking it must not focus both calendars.
+    (second.get('[data-es-id="20210705"]').element as HTMLElement).click();
+    await vi.waitFor(() => expect(focusedDayOf(first)).toHaveLength(0));
+    expect(focusedDayOf(second)).toHaveLength(1);
+  });
+
+  test('Removes pending document listeners when unmounted', async () => {
+    const removeListener = vi.spyOn(document, 'removeEventListener');
     const wrapper = mount(VueEventCreator, {
       attachTo: document.body,
       props: {

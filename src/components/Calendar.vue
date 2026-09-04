@@ -12,6 +12,7 @@
       </div>
     </div>
     <button
+      type="button"
       class="vec-months__shift vec-months__shift_before"
       @click="addMonthsToCalendar('before')"
     >
@@ -23,6 +24,7 @@
       :month="month"
     />
     <button
+      type="button"
       class="vec-months__shift vec-months__shift_after"
       @click="addMonthsToCalendar('after')"
     >

@@ -1,5 +1,5 @@
 <template>
-  <div class="vec-events__wrapper">
+  <div ref="eventsRoot" class="vec-events__wrapper">
     <vec-default-time-component />
     <div class="vec-events">
       <vec-event-component
@@ -21,6 +21,7 @@ import VecEventComponent from './Event.vue';
 import {
   defineComponent,
   inject,
+  ref,
   watch,
   nextTick,
   type Component,
@@ -55,6 +56,7 @@ export default defineComponent({
     },
   },
   setup() {
+    const eventsRoot = ref<HTMLElement>();
     const events = inject('eventsState') as Ref<VecEvent[]>;
     const focusedEventState: VecFocusedEventState =
       inject('focusedEventState')!;
@@ -62,10 +64,11 @@ export default defineComponent({
     watch(focusedEventState, (next) => {
       if (!next) return;
 
-      nextTick(() => {
-        const eventCardElem = document.getElementById(
-          `vec-es-id-${next.es_id}`,
-        ) as HTMLDivElement | undefined;
+      void nextTick(() => {
+        // Scoped to this instance so several calendars cannot scroll each other.
+        const eventCardElem = eventsRoot.value?.querySelector<HTMLElement>(
+          `[data-vec-event-id="${next.es_id}"]`,
+        );
         eventCardElem?.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
@@ -76,6 +79,7 @@ export default defineComponent({
 
     return {
       events,
+      eventsRoot,
     };
   },
 });

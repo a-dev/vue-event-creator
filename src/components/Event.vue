@@ -2,7 +2,7 @@
   <div
     ref="eventElement"
     :key="forceUpdateKey"
-    :id="`vec-es-id-${event.es_id}`"
+    :data-vec-event-id="event.es_id"
     class="vec-event"
     :class="{
       'vec-event_focused': isFocused,
@@ -37,6 +37,7 @@
         v-model="eventTimeFinishesAt"
       />
       <button
+        type="button"
         @click="setDefaultTime"
         v-if="isNotDefaultTime"
         class="vec-button vec-button_primary-bg"
@@ -57,12 +58,14 @@
     </div>
     <footer class="vec-event__footer">
       <button
+        type="button"
         class="vec-button vec-button_danger-bg"
         @click.prevent="removeEvent"
       >
         {{ i18n.t('button_remove') }}
       </button>
       <button
+        type="button"
         v-if="isEventEditing"
         @click.prevent="cancelEditing"
         class="vec-button vec-button_outline"
@@ -70,6 +73,7 @@
         {{ i18n.t('button_cancel') }}
       </button>
       <button
+        type="button"
         class="vec-button vec-button_primary-bg"
         @click.prevent="isEventEditing ? saveEvent() : editEvent()"
       >
@@ -147,6 +151,10 @@ export default defineComponent({
   setup(props) {
     const i18n = useI18n();
 
+    /** Normalizes anything a consumer callback rejects with into an Error. */
+    const toErrorMessage = (error: unknown, fallback: string) =>
+      error instanceof Error ? error : new Error(fallback);
+
     const eventsState = inject('eventsState') as VecEventsState;
     const calendarState = inject('calendarState') as VecCalendarState;
     const defaultTimeState = inject('defaultTimeState')! as VecDefaultTime;
@@ -202,6 +210,7 @@ export default defineComponent({
 
     const eventData = ref(props.event?.data);
     const saveEvent = async () => {
+      if (loader.value) return;
       loader.value = true;
       serverError.value = '';
       const event: EditableEvent = {
@@ -249,29 +258,33 @@ export default defineComponent({
         focusedEventState.value = null;
         isEventEditing.value = false;
       } catch (error) {
-        const err =
-          error instanceof Error
-            ? error
-            : new Error('Unable to save the event');
-        serverError.value = err.message;
+        serverError.value = toErrorMessage(
+          error,
+          'Unable to save the event',
+        ).message;
         isEventEditing.value = true;
-        console.error(err);
       } finally {
         loader.value = false;
       }
     };
 
-    const editEvent = () => {
-      props
-        .editEventFn(toEditableEvent(props.event))
-        .then(() => {
-          toggleEventEditAction(props.event, { editing: true });
-          isEventEditing.value = true;
-          focusEditor();
-        })
-        .catch((err: Error) => {
-          console.error(err);
-        });
+    const editEvent = async () => {
+      if (loader.value) return;
+      loader.value = true;
+      serverError.value = '';
+      try {
+        await props.editEventFn(toEditableEvent(props.event));
+        toggleEventEditAction(props.event, { editing: true });
+        isEventEditing.value = true;
+        focusEditor();
+      } catch (error) {
+        serverError.value = toErrorMessage(
+          error,
+          'Unable to start editing the event',
+        ).message;
+      } finally {
+        loader.value = false;
+      }
     };
 
     const forceUpdateKey = ref(Math.random());
@@ -311,20 +324,27 @@ export default defineComponent({
 
     const guardAlertConfirm = () => {
       return async function (confirm: 'yes' | 'no') {
-        await confirm;
-        if (confirm === 'yes') {
-          props
-            .removeEventFn(
-              toSavedEvent({ ...props.event, id: props.event.id! }),
-            )
-            .then(() => {
-              removeEventAction(props.event);
-            })
-            .catch((err: Error) => {
-              console.error(err);
-            });
-        } else {
+        if (confirm !== 'yes') {
           guardAlertState.value = 'hidden';
+          return;
+        }
+        if (loader.value) return;
+
+        loader.value = true;
+        serverError.value = '';
+        try {
+          await props.removeEventFn(
+            toSavedEvent({ ...props.event, id: props.event.id! }),
+          );
+          removeEventAction(props.event);
+        } catch (error) {
+          guardAlertState.value = 'hidden';
+          serverError.value = toErrorMessage(
+            error,
+            'Unable to remove the event',
+          ).message;
+        } finally {
+          loader.value = false;
         }
       };
     };

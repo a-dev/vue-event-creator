@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TZ: UTC
+
+jobs:
+  ci:
+    name: Ordinary CI gate
+    uses: ./.github/workflows/ci.yml
+
+  cross-browser:
+    name: Cross-browser E2E gate
+    uses: ./.github/workflows/scheduled-e2e.yml
+
+  publish:
+    name: Publish to npm
+    needs: [ci, cross-browser]
+    runs-on: ubuntu-latest
+    # Publishing credentials live in a protected environment, so a release also
+    # requires whatever reviewers/branch rules that environment enforces.
+    environment: npm-publish
+    permissions:
+      contents: read
+      # Required for npm provenance attestations.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22.12.0'
+          registry-url: 'https://registry.npmjs.org'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.1'
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Install Chromium for Playwright
+        run: bunx playwright install --with-deps chromium
+      # `prepublishOnly` runs `release:check` (format, types, lint, unit and
+      # browser tests, build, package checks, E2E), so publication cannot skip
+      # the gate even when invoked manually.
+      - name: Publish
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

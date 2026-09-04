@@ -15,6 +15,7 @@ const browserTests = [
   'tests/unit/Events.spec.ts',
   'tests/unit/Localization.spec.ts',
   'tests/unit/Month.spec.ts',
+  'tests/unit/useDocumentClick.spec.ts',
   'tests/unit/VueEventCreator.spec.ts',
 ];
 

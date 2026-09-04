@@ -8,7 +8,7 @@
       {{ i18n.t('button_retry') }}
     </button>
   </div>
-  <div v-else class="vec-body">
+  <div v-else ref="rootElement" class="vec-body">
     <button
       type="button"
       class="vec-calendar__switcher"
@@ -39,7 +39,6 @@ import {
   provide,
   watch,
   ref,
-  onBeforeUnmount,
   toRef,
   type Component,
   type PropType,
@@ -63,7 +62,12 @@ import { createI18n, i18nKey } from './locales/index';
 import VecCalendar from './components/Calendar.vue';
 import { makeEsIdFromStartsAt } from './lib/dayjs';
 import VecEvents from './components/Events.vue';
-import { useCalendarActions, setValueToDate } from './hooks/useCalendarActions';
+import {
+  useCalendarActions,
+  setValueToDate,
+  nullifyChoosingDatesState,
+} from './hooks/useCalendarActions';
+import { useDocumentClick } from './hooks/useDocumentClick';
 import { buildMonthsForCalendarState } from './hooks/calendarBuildActions';
 import { sortEvents } from './hooks/useEventActions';
 
@@ -118,6 +122,7 @@ export default defineComponent({
     const loader = ref(true);
     const loadError = ref('');
     const isSwitcherOn = ref(false); // only for small screens
+    const rootElement = ref<HTMLElement>();
 
     const calendarState = reactive<VecCalendarState>({
       months: [],
@@ -178,6 +183,15 @@ export default defineComponent({
       return ordered;
     };
 
+    const rebuildCalendar = () => {
+      calendarState.months = buildMonthsForCalendarState(
+        props.firstDate,
+        eventsState.value,
+        props.monthsOnPage,
+      );
+      calendarFillEvents();
+    };
+
     const loadEvents = async () => {
       loader.value = true;
       loadError.value = '';
@@ -188,12 +202,7 @@ export default defineComponent({
         );
         sortEvents(eventsState);
 
-        calendarState.months = buildMonthsForCalendarState(
-          props.firstDate,
-          eventsState.value,
-          props.monthsOnPage,
-        );
-        calendarFillEvents();
+        rebuildCalendar();
       } catch (error) {
         eventsState.value = [];
         calendarState.months = [];
@@ -212,20 +221,17 @@ export default defineComponent({
       { deep: true },
     );
 
-    const pendingTimeouts = new Set<ReturnType<typeof setTimeout>>();
-    const bodyListeners = new Set<(event: MouseEvent) => void>();
-    const listenToNextBodyClick = (listener: (event: MouseEvent) => void) => {
-      const timeout = setTimeout(() => {
-        pendingTimeouts.delete(timeout);
-        bodyListeners.add(listener);
-        document.body.addEventListener('click', listener);
-      });
-      pendingTimeouts.add(timeout);
-    };
-    const removeBodyListener = (listener: (event: MouseEvent) => void) => {
-      document.body.removeEventListener('click', listener);
-      bodyListeners.delete(listener);
-    };
+    watch(
+      () => [props.firstDate, props.monthsOnPage] as const,
+      () => {
+        if (loader.value || loadError.value) return;
+        nullifyChoosingDatesState(choosingDatesState);
+        rebuildCalendar();
+      },
+    );
+
+    // One controller per instance; it removes its own listeners on unmount.
+    const documentClick = useDocumentClick();
 
     watch(choosingDatesState, (next) => {
       if (!next) return;
@@ -233,76 +239,54 @@ export default defineComponent({
       if (next.finishesAtId) {
         setEventOnChoosingDays(defaultTimeState);
       } else if (next.startsAtId) {
-        setValueToDate(calendarState, next.startsAtId!, {
+        const startsAtId = next.startsAtId;
+        setValueToDate(calendarState, startsAtId, {
           choosing: true,
         });
 
-        const listenDayClick = (event: MouseEvent) => {
-          removeBodyListener(listenDayClick);
-
-          const target = event.target;
-          if (!(target instanceof Element)) return;
+        documentClick.listenToNextClick('choosing-dates', (target) => {
+          documentClick.stop('choosing-dates');
 
           const isTargetElemDay =
             target.classList.contains('vec-day__number') ||
             target.classList.contains('vec-day');
           if (!isTargetElemDay) {
-            setValueToDate(calendarState, next.startsAtId!, {
+            setValueToDate(calendarState, startsAtId, {
               choosing: false,
             });
             choosingDatesState.startsAtId = null;
           }
-        };
-        listenToNextBodyClick(listenDayClick);
+        });
       }
     });
 
     watch(focusedEventState, (next) => {
       if (!next) return;
 
-      const listenClickAfterFocus = ((focusedEsId) => {
-        const handleClick = (event: MouseEvent) => {
-          const target = event.target;
-          if (!(target instanceof Element)) return;
-          const targetElem = target.classList.contains('vec-day__number')
-            ? target.parentElement
-            : target;
-          if (!targetElem) return;
+      const focusedEsId = next.es_id;
 
-          const eventElems = Array.from(
-            document.querySelectorAll(`[data-es-id="${focusedEsId}"]`),
-          );
-          if (eventElems.length) {
-            let founded = false;
-            for (const el of eventElems) {
-              if (el === targetElem) {
-                founded = true;
-                break;
-              }
-            }
-            if (!founded) {
-              removeBodyListener(handleClick);
-              if (!targetElem.hasAttribute('data-es-id')) {
-                focusedEventState.value = null;
-              }
-            }
-          } else {
-            removeBodyListener(handleClick);
-          }
-        };
-        return handleClick;
-      })(next.es_id);
+      documentClick.listenToNextClick('focused-event', (target) => {
+        const targetElem = target.classList.contains('vec-day__number')
+          ? target.parentElement
+          : target;
+        if (!targetElem) return;
 
-      listenToNextBodyClick(listenClickAfterFocus);
-    });
+        // Scoped to this instance, so a day of another calendar showing the
+        // same date can neither hold nor steal this instance's focus.
+        const focusedDays = Array.from(
+          rootElement.value?.querySelectorAll(
+            `[data-es-id="${focusedEsId}"]`,
+          ) ?? [],
+        );
+        if (focusedDays.includes(targetElem)) return;
 
-    onBeforeUnmount(() => {
-      pendingTimeouts.forEach((timeout) => clearTimeout(timeout));
-      bodyListeners.forEach((listener) =>
-        document.body.removeEventListener('click', listener),
-      );
-      pendingTimeouts.clear();
-      bodyListeners.clear();
+        documentClick.stop('focused-event');
+
+        // Another day of this instance took the focus during the same click.
+        if (focusedEventState.value?.es_id !== focusedEsId) return;
+
+        focusedEventState.value = null;
+      });
     });
 
     provide('calendarState', calendarState);
@@ -318,6 +302,7 @@ export default defineComponent({
       loadEvents,
       i18n,
       isSwitcherOn,
+      rootElement,
     };
   },
 });

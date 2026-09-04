@@ -5,15 +5,11 @@ import 'dayjs/locale/ru.js';
 
 dayjs.extend(localeData);
 
-const setDayJsLang = (lang: string) => {
-  dayjs.locale(lang);
-};
-
-const formatDate = (
-  startsAt: Date,
-  finishesAt: Date,
-  locale: string = dayjs.locale(),
-) => {
+/**
+ * Formats a date range in `locale` without touching the Day.js global locale,
+ * so instances with different `language` props never interfere.
+ */
+const formatDate = (startsAt: Date, finishesAt: Date, locale = 'en') => {
   const localizedStart = dayjs(startsAt).locale(locale);
   const localizedFinish = dayjs(finishesAt).locale(locale);
   let formattedDate;
@@ -47,4 +43,4 @@ const setTimeToDate = (date: Date, hm: string) => {
 };
 
 export default dayjs;
-export { setDayJsLang, formatDate, setTimeToDate, makeEsIdFromStartsAt };
+export { formatDate, setTimeToDate, makeEsIdFromStartsAt };

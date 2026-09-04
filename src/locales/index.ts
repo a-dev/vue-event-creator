@@ -1,6 +1,7 @@
 import {
   hasInjectionContext,
   inject,
+  readonly,
   ref,
   type InjectionKey,
   type Ref,
@@ -24,8 +25,6 @@ export interface VecI18n {
 
 export const i18nKey: InjectionKey<VecI18n> = Symbol('vec-i18n');
 
-const legacyLanguage = ref<VecLanguageLocale>('en');
-
 export const createI18n = (
   language: Readonly<Ref<VecLanguageLocale>>,
 ): VecI18n => ({
@@ -38,15 +37,16 @@ export const createI18n = (
   },
 });
 
-const legacyI18n = createI18n(legacyLanguage);
+/**
+ * Read-only fallback for child components mounted outside a
+ * `VueEventCreator` instance (component tests, custom compositions). Nothing
+ * can mutate it, so one instance can never change another instance's locale.
+ */
+const fallbackI18n = createI18n(readonly(ref<VecLanguageLocale>('en')));
 
-const setI18n = (lang: VecLanguageLocale) => {
-  legacyLanguage.value = lang;
+const useI18n = (): VecI18n => {
+  if (!hasInjectionContext()) return fallbackI18n;
+  return inject(i18nKey, fallbackI18n);
 };
 
-const useI18n = () => {
-  if (!hasInjectionContext()) return legacyI18n;
-  return inject(i18nKey, legacyI18n);
-};
-
-export { setI18n, useI18n };
+export { useI18n };

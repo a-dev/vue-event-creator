@@ -1,7 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils';
 
 import VueEventCreator from '../../src/VueEventCreator.vue';
-import { setI18n, useI18n } from '../../src/locales/index';
+import { useI18n } from '../../src/locales/index';
 import { describe, expect, test } from 'vitest';
 
 describe('Localization tests', () => {
@@ -32,7 +32,6 @@ describe('Localization tests', () => {
   });
 
   test('If phrase has no translate', () => {
-    setI18n('en');
     const i18n = useI18n();
 
     expect(i18n.t('nothing_here')).toBe("translation missing: 'nothing_here'");

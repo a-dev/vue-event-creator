@@ -1,6 +1,8 @@
 # Version 2 modernization plan
 
-Status: phases 0 and 1 implemented; phases 2 through 5 are pending.
+Status: all phases (0 through 5) implemented.
+The Phase 3 item deferred into Phase 4 (Firefox/WebKit in scheduled CI) is done:
+they run in a scheduled/release workflow and stay out of the pull-request gate.
 
 ## Version 2 decisions
 
@@ -101,30 +103,30 @@ published, and the packed ESM consumer builds.
 
 ## Phase 2 — Replace Jest with Vitest
 
-- [ ] Add `vitest.config.ts` with two explicit projects:
+- [x] Add `vitest.config.ts` with two explicit projects:
   - `unit`: Node environment for date and state-transition modules;
   - `browser`: Playwright provider, headless Chromium in CI, for Vue components
     and real DOM/browser behavior.
-- [ ] Load `@vitejs/plugin-vue` in the Vitest config. Set `TZ=UTC` in the test
+- [x] Load `@vitejs/plugin-vue` in the Vitest config. Set `TZ=UTC` in the test
       command or setup where deterministic date snapshots require it.
-- [ ] Convert Jest globals/imports to Vitest (`jest` to `vi`) and remove Jest-only
+- [x] Convert Jest globals/imports to Vitest (`jest` to `vi`) and remove Jest-only
       transforms; Vitest/Vite compiles Vue SFCs directly.
-- [ ] Fix ineffective assertions such as `.toBeTruthy`/`.toBeFalsy` without
+- [x] Fix ineffective assertions such as `.toBeTruthy`/`.toBeFalsy` without
       parentheses before treating migrated coverage as trustworthy.
-- [ ] Build fresh wrappers, refs, and calendar state in `beforeEach`; remove
+- [x] Build fresh wrappers, refs, and calendar state in `beforeEach`; remove
       describe-scoped mutable fixtures and order-dependent tests.
-- [ ] Make every async trigger/callback observable with awaited DOM assertions,
+- [x] Make every async trigger/callback observable with awaited DOM assertions,
       not extra sleeps.
-- [ ] Move component suites to browser mode incrementally: `Day`, `Month`,
+- [x] Move component suites to browser mode incrementally: `Day`, `Month`,
       `Calendar`, `Event`, `Events`, localization, then the public component.
-- [ ] In browser tests, use real `userEvent`/locator interaction for clicks,
+- [x] In browser tests, use real `userEvent`/locator interaction for clicks,
       keyboard use, input values, focus, outside-click handling, and scroll behavior.
-- [ ] Add tests for callback rejection, ID `0`, invalid/reversed dates, overlap,
+- [x] Add tests for callback rejection, ID `0`, invalid/reversed dates, overlap,
       multiple differently localized instances, prop updates, unmount cleanup, and
       consumer input immutability.
-- [ ] Add V8 coverage after both projects are green. Start by recording the
+- [x] Add V8 coverage after both projects are green. Start by recording the
       baseline; raise thresholds only with meaningful branch tests.
-- [ ] Remove `jest`, `ts-jest`, `babel-jest`, `@vue/vue3-jest`,
+- [x] Remove `jest`, `ts-jest`, `babel-jest`, `@vue/vue3-jest`,
       `jest-environment-jsdom`, `jest-transform-stub`, `@types/jest`, and
       `jest.config.js` in the same migration.
 
@@ -145,12 +147,12 @@ Chromium projects pass independently, and no Jest/Babel transform stack remains.
 
 ## Phase 3 — Add Playwright end-to-end tests
 
-- [ ] Add `playwright.config.ts` and `tests/e2e`. Configure `webServer` to build
+- [x] Add `playwright.config.ts` and `tests/e2e`. Configure `webServer` to build
       and preview a deterministic test/demo app with a fixed `baseURL`.
-- [ ] Make demo data deterministic under test: fixed clock, stable IDs, and
+- [x] Make demo data deterministic under test: fixed clock, stable IDs, and
       injectable success/failure callbacks. Avoid random placement and one-second
       waits in E2E mode.
-- [ ] Cover these user journeys:
+- [x] Cover these user journeys:
   - initial load and existing event rendering;
   - one-day and multi-day event creation;
   - custom event-data editing and successful save;
@@ -160,29 +162,29 @@ Chromium projects pass independently, and no Jest/Babel transform stack remains.
   - adding months, focusing an event from a calendar day, and locale switching;
   - responsive calendar/event-list switcher;
   - keyboard-only creation and editing after accessibility fixes.
-- [ ] Run the core suite on Chromium for each pull request. Add Firefox and
+- [x] Run the core suite on Chromium for each pull request. Add Firefox and
       WebKit to scheduled/release CI first, then promote them when stable.
-- [ ] Add a separate packed ESM-consumer smoke journey so E2E catches missing
+- [x] Add a separate packed ESM-consumer smoke journey so E2E catches missing
       exports, types, CSS, or runtime dependencies.
-- [ ] Retain traces on first retry and screenshots/videos only on failure.
+- [x] Retain traces on first retry and screenshots/videos only on failure.
 
 Acceptance: the demo and packed package both complete the critical create/edit/
 save/remove journey in a real browser.
 
 ## Phase 4 — Rebuild CI around release gates
 
-- [ ] Trigger CI for `main` and pull requests; remove obsolete `master` and
+- [x] Trigger CI for `main` and pull requests; remove obsolete `master` and
       `develop` filters unless those branches are intentionally restored.
-- [ ] Use current checkout/setup actions, install the pinned Bun version, and run
+- [x] Use current checkout/setup actions, install the pinned Bun version, and run
       `bun install --frozen-lockfile`.
-- [ ] Install the Chromium binary/dependencies required by the shared Playwright
+- [x] Install the Chromium binary/dependencies required by the shared Playwright
       provider.
-- [ ] Gate in this order: format check, TypeScript 6/`vue-tsc` type-check, lint,
+- [x] Gate in this order: format check, TypeScript 6/`vue-tsc` type-check, lint,
       unit tests, browser tests, build, package lint/types, packed-consumer build,
       and Playwright E2E.
-- [ ] Split fast static/unit checks from browser/package jobs and upload reports
+- [x] Split fast static/unit checks from browser/package jobs and upload reports
       only on failure.
-- [ ] Add a release workflow with npm provenance and protected npm publishing
+- [x] Add a release workflow with npm provenance and protected npm publishing
       credentials only after ordinary CI is stable.
 
 Acceptance: CI executes on the actual default branch with the same package
@@ -190,22 +192,22 @@ manager and commands used locally; publication cannot bypass the full gate.
 
 ## Phase 5 — Runtime and documentation cleanup
 
-- [ ] Implement the P1 findings in `TODO-review.md` behind regression tests.
-- [ ] Scope locale/date services per instance and make supported prop changes
+- [x] Implement the P1 findings in `TODO-review.md` behind regression tests.
+- [x] Scope locale/date services per instance and make supported prop changes
       reactive.
-- [ ] Replace document-body listener management with lifecycle-aware composables.
-- [ ] Use native accessible controls and labels; verify with browser and E2E
+- [x] Replace document-body listener management with lifecycle-aware composables.
+- [x] Use native accessible controls and labels; verify with browser and E2E
       keyboard tests.
-- [ ] Remove obsolete ESLint/Prettier dependencies and `.eslintrc.js` after the
+- [x] Remove obsolete ESLint/Prettier dependencies and `.eslintrc.js` after the
       Oxlint/Oxfmt migration is complete.
-- [ ] Rewrite README examples against the generated public types and actual CSS
+- [x] Rewrite README examples against the generated public types and actual CSS
       export. Correct outdated demo copy and callback examples.
-- [ ] Document Node/browser support, time-zone semantics, overlap constraints,
+- [x] Document Node/browser support, time-zone semantics, overlap constraints,
       and the release process.
-- [ ] Add a `MIGRATION.md` section covering ESM-only imports, removal of
+- [x] Add a `MIGRATION.md` section covering ESM-only imports, removal of
       `require()`/UMD/script-tag usage, the CSS subpath, callback contracts, public
       types, event identity, locale behavior, and error handling.
-- [ ] Add a `2.0.0` changelog entry that clearly labels all intentional breaking
+- [x] Add a `2.0.0` changelog entry that clearly labels all intentional breaking
       changes.
 
 ## Suggested commit sequence

@@ -1,5 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// Chromium is the per-pull-request gate. Firefox and WebKit run in scheduled and
+// release CI, where `E2E_ALL_BROWSERS` is set, until they are stable enough to
+// promote into the pull-request gate.
+const crossBrowser = Boolean(process.env.E2E_ALL_BROWSERS);
+
+const demoBaseURL = 'http://127.0.0.1:4173';
+const packedBaseURL = 'http://127.0.0.1:4174';
+
+const extraBrowsers = [
+  { name: 'firefox', device: devices['Desktop Firefox'] },
+  { name: 'webkit', device: devices['Desktop Safari'] },
+];
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -31,7 +44,7 @@ export default defineConfig({
       testMatch: '**/*.demo.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
-        baseURL: 'http://127.0.0.1:4173',
+        baseURL: demoBaseURL,
       },
     },
     {
@@ -39,8 +52,22 @@ export default defineConfig({
       testMatch: '**/*.packed.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
-        baseURL: 'http://127.0.0.1:4174',
+        baseURL: packedBaseURL,
       },
     },
+    ...(crossBrowser
+      ? extraBrowsers.flatMap(({ name, device }) => [
+          {
+            name: `demo-${name}`,
+            testMatch: '**/*.demo.spec.ts',
+            use: { ...device, baseURL: demoBaseURL },
+          },
+          {
+            name: `packed-${name}`,
+            testMatch: '**/*.packed.spec.ts',
+            use: { ...device, baseURL: packedBaseURL },
+          },
+        ])
+      : []),
   ],
 });

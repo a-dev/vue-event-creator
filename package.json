@@ -16,6 +16,7 @@
   "files": [
     "dist",
     "README.md",
+    "MIGRATION.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
@@ -49,6 +50,7 @@
     "test:e2e": "TZ=UTC playwright test",
     "test:e2e:demo": "TZ=UTC playwright test --project demo-chromium",
     "test:e2e:packed": "TZ=UTC playwright test --project packed-chromium",
+    "test:e2e:cross-browser": "E2E_ALL_BROWSERS=1 TZ=UTC playwright test",
     "typecheck": "vue-tsc --noEmit",
     "lint": "oxlint --vue-plugin src demo tests scripts vite.config.ts vitest.config.ts playwright.config.ts demo/vite.config.ts",
     "format": "oxfmt --write src demo tests scripts vite.config.ts vitest.config.ts playwright.config.ts demo/vite.config.ts tsconfig.json tsconfig.build.json package.json",
@@ -73,14 +75,8 @@
     "@vitest/browser-playwright": "^5",
     "@vitest/coverage-v8": "^5",
     "@vue/compiler-sfc": "^3.5.42",
-    "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/test-utils": "^2.5.0",
     "autoprefixer": "^10.5.5",
-    "eslint": "^8.57.1",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.6",
-    "eslint-plugin-standard": "^5.0.0",
-    "eslint-plugin-vue": "^10.10.0",
     "oxfmt": "^0.66.0",
     "oxlint": "^1.81.0",
     "postcss": "^8.5.28",
@@ -91,7 +87,6 @@
     "vite": "^8.2.2",
     "vitest": "^5",
     "vue": "^3.5.42",
-    "vue-template-compiler": "^2.7.16",
     "vue-tsc": "^3.3"
   },
   "peerDependencies": {
