@@ -1,6 +1,6 @@
 {
   "name": "vue-event-creator",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Vue.js library for an admin interface: easy way to schedule events in the calendar",
   "homepage": "https://a-dev.github.io/vue-event-creator/",
   "bugs": {
