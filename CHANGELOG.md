@@ -1,3 +1,49 @@
+## 2.1.0
+
+A visual redesign of the calendar and event cards, with the interaction changes
+below. Props, callbacks, event data, locale keys, CSS entry point, and package
+exports are unchanged. Two things need attention on upgrade: one palette
+variable was renamed to fix a misspelling published in 2.0.0, and the Vue peer
+range now requires 3.5.
+
+### Added
+
+- `--vec-radius-panel` (28px) and `--vec-radius-control` (16px) configure the
+  corner shapes of panels and controls. See the README for the shape and its
+  fallback.
+- Time inputs and action buttons have a 44px minimum target, each time field
+  carries its own label, and the component's controls show a visible
+  `:focus-visible` outline.
+- `prefers-reduced-motion: reduce` is honored.
+
+### Changed
+
+- **`engines.node` moves from `>=22.12.0` to `>=24.0.0`.** The Vite 8 / Vitest 5
+  toolchain requires it. Installing on Node 22 now produces an `EBADENGINE`
+  warning; the published ES module itself is unchanged.
+- **The palette variable `--vec-color-tertiaty` is renamed to
+  `--vec-color-tertiary`.** The misspelling was published in 2.0.0 earlier the
+  same day and is corrected rather than carried forward. Palette values are
+  unchanged. Anyone who overrode the old name in that window updates the
+  spelling; no other variable changed.
+- **The Vue peer range narrows from `^3.x` to `^3.5.0`.** The calendar
+  disclosure uses `useId()`, added in Vue 3.5, so 3.0-3.4 no longer work. The
+  support matrix already documented 3.5 as the minimum; the manifest now
+  matches it instead of resolving to a version that fails at runtime.
+- On screens narrower than 768px the calendar is an inline disclosure below a
+  labeled toggle button instead of an off-canvas panel sliding over the page,
+  so it no longer covers an open event editor. Collapsed dates leave the
+  keyboard tab order, and the toggle exposes `aria-controls` and its state.
+- The demo application was rewritten around the scheduling use case.
+
+### Fixed
+
+- The event editor's default-time button aligns to the right based on the width
+  of its own time-controls row rather than the width of the viewport.
+- The connector dot between consecutive scheduled days is centered on the day
+  and is no longer drawn at the start of a calendar week, where it pointed at
+  the previous row.
+
 ## 2.0.0
 
 A breaking release. See [MIGRATION.md](MIGRATION.md) for the upgrade guide.
@@ -31,13 +77,11 @@ A breaking release. See [MIGRATION.md](MIGRATION.md) for the upgrade guide.
   `vec-es-id-<date>` element `id`.
 - **Days and the responsive switcher are `<button>` elements**, not clickable
   `<div>`s. All buttons declare `type="button"`.
-- **Node.js 24.0 or newer** is required for tooling, and Vue `^3.x` is the
-  declared peer range. Node 22 is not supported.
+- **Node.js 22.12 or newer** is required for tooling, and Vue `^3.x` is the
+  declared peer range.
 
 ### Fixed
 
-- Event editor default-time button alignment responds to its time-controls row
-  width rather than the viewport width.
 - An event id of `0` is treated as a saved id instead of an unsaved draft.
 - Two calendars mounted at once no longer share a locale, steal each other's
   focus, or scroll each other's event cards.
@@ -51,17 +95,6 @@ A breaking release. See [MIGRATION.md](MIGRATION.md) for the upgrade guide.
 - Consumer-supplied events and data objects are never mutated.
 
 ### Added
-
-- Roomier calendar and event cards, grouped time fields, larger action targets,
-  and an inline mobile calendar disclosure that does not cover event editors.
-- Squircle panels and controls with an area-matched circular fallback and
-  configurable `--vec-radius-panel` / `--vec-radius-control` variables. The
-  existing color palette is preserved.
-- Rounder calendar days with an area-matched fallback.
-- Compact saved cards with dates and actions in a shared desktop header, less
-  repeated demo copy, and button hover outlines instead of underlined text.
-- A redesigned demo with a conversational explanation of the scheduling use
-  case, labeled editing fields, and an MIT license and author footer.
 
 - `MIGRATION.md`, a rewritten `README.md`, and documented Node/browser support,
   time-zone semantics, overlap constraints, and the release process.

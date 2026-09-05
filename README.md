@@ -32,7 +32,7 @@ column and stays a draft until you save it.
 | ---------------- | ------------------------------------------------------------------ |
 | Module format    | ESM only. No CommonJS, UMD, or `<script>` build is published.       |
 | Node.js          | 24.0 or newer (`engines.node`), for bundlers and tooling.           |
-| Vue              | `^3.x` as a peer dependency; developed against 3.5.                 |
+| Vue              | `^3.5.0` as a peer dependency; developed against 3.5.               |
 | Runtime deps     | Day.js only. Vue stays external.                                    |
 | Browsers         | Evergreen Chromium, Firefox, and WebKit. E2E runs on all three.     |
 | TypeScript       | Declarations resolve under `bundler`/`node16` ESM resolution.       |
@@ -286,8 +286,11 @@ area-matched circular `border-radius` fallback based on the
 Customize `--vec-radius-panel` (28px) and `--vec-radius-control` (16px) to adjust
 the panel and control shapes; set both to `0px` for square corners on those
 elements. Calendar days use a separate, nearly circular `superellipse(1.25)`
-shape with a 50% radius and an area-matched circular fallback. Existing palette
-variables are unchanged.
+shape with a 50% radius and an area-matched circular fallback.
+
+Palette values are unchanged. One name changed in 2.1: the misspelled
+`--vec-color-tertiaty` from 2.0 is now `--vec-color-tertiary`. If you overrode
+the old name, update the spelling.
 
 Below 768px, the labeled calendar toggle expands an inline panel above the
 events. Collapsed dates are removed from keyboard navigation. Larger screens
