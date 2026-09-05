@@ -9,6 +9,7 @@ import {
   VecDefaultTime,
 } from '../types/internal';
 import { buildEventOnThisDays, sortEvents } from './useEventActions';
+import { calendarAddMonths } from './calendarBuildActions';
 
 export function getRangeBetweenEventDates(startsAt: Date, finishesAt: Date) {
   return Math.abs(dayjs(startsAt).diff(finishesAt, 'days'));
@@ -143,6 +144,14 @@ export function useCalendarActions(
     });
   };
 
+  // Expansion and filling are one action: months generated anywhere else are
+  // born with `es_id: null` and stay empty, because `setValueToDate` skips
+  // months that did not exist when the events were last applied.
+  const addMonthsToCalendar = (direction: 'before' | 'after'): void => {
+    calendarState.months = calendarAddMonths(calendarState, direction).slice();
+    calendarFillEvents();
+  };
+
   const setEventOnChoosingDays = (defaultTimeState: VecDefaultTime): void => {
     const event: VecEvent = buildEventOnThisDays(
       choosingDatesState,
@@ -161,6 +170,7 @@ export function useCalendarActions(
 
   return {
     calendarFillEvents,
+    addMonthsToCalendar,
     setEventOnChoosingDays,
   };
 }

@@ -32,6 +32,7 @@
   --vec-radius-control: 16px;
   /* sizes */
   --vec-calendar-max-height: calc(100vh - 40px);
+  --vec-calendar-max-width: 350px;
   /* z-indexes; */
   --vec-z-index-calendar: 10;
   --vec-z-index-guard-alert: 10;

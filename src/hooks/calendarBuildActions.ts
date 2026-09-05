@@ -73,14 +73,16 @@ export function buildMonthsForCalendarState(
 
     firstMonth = new Date(calculateFirstDayOfMonth(firstEventstartsAt));
     const lastEventfinishesAt = events[events.length - 1].finishesAt!;
-    if (
-      Math.abs(dayjs(firstEventstartsAt).diff(lastEventfinishesAt, 'month')) >
-      monthsOnPage
-    ) {
-      lastMonth = new Date(calculateFirstDayOfMonth(lastEventfinishesAt));
-    } else {
-      lastMonth = dayjs(firstEventstartsAt).add(monthsOnPage, 'month').toDate();
-    }
+
+    // Compare calendar-month boundaries, not whole elapsed months between raw
+    // timestamps: May 22 -> September 6 is three elapsed months but four
+    // calendar months, and the last event's month must always be rendered.
+    const defaultLastMonth = dayjs(firstMonth).add(monthsOnPage, 'month');
+    const lastEventMonth = dayjs(calculateFirstDayOfMonth(lastEventfinishesAt));
+
+    lastMonth = lastEventMonth.isAfter(defaultLastMonth, 'month')
+      ? lastEventMonth.toDate()
+      : defaultLastMonth.toDate();
   } else {
     firstMonth = new Date(calculateFirstDayOfMonth(firstDay));
     lastMonth = dayjs(firstDay)

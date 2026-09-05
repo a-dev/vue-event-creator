@@ -7,8 +7,11 @@
 .vec-calendar {
   box-sizing: border-box;
   width: 100%;
+  /* Day cells are circular; unbounded width stretches them into ovals. */
+  max-width: var(--vec-calendar-max-width);
   min-height: 320px;
   max-height: var(--vec-calendar-max-height);
+  margin-inline: auto;
 
   border: 1px solid var(--vec-color-gray-light);
 
