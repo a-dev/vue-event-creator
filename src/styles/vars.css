@@ -13,7 +13,7 @@
   /*  */
   --vec-color-primary: hsl(232, 100%, 63%);
   --vec-color-secondary: hsl(201, 76%, 72%);
-  --vec-color-tertiaty: hsl(188, 61%, 89%);
+  --vec-color-tertiary: hsl(188, 61%, 89%);
   /*  */
   --vec-color-warning: hsl(7, 89%, 63%);
   /* rem */
@@ -27,6 +27,9 @@
   --vec-fs-s: 17px;
   --vec-fs-m: 19px;
   --vec-lh-m: 1.41;
+  /* Squircle radii; circular fallbacks are area-matched. */
+  --vec-radius-panel: 28px;
+  --vec-radius-control: 16px;
   /* sizes */
   --vec-calendar-max-height: calc(100vh - 40px);
   /* z-indexes; */

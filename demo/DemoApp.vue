@@ -1,62 +1,110 @@
 <template>
-  <h1 class="vec-demo__title">Vue Event Creator</h1>
-  <div class="vec-demo__description">
-    <div class="vec-demo__phantom" :style="phantomStyle()">29</div>
-    <div class="vec-demo__phantom" :style="phantomStyle()">12</div>
-    <div class="vec-demo__phantom" :style="phantomStyle()">Mo</div>
-    <div class="vec-demo__phantom" :style="phantomStyle()">Tw</div>
-    <div class="vec-demo__phantom" :style="phantomStyle()">August</div>
-    <div class="vec-demo__phantom" :style="phantomStyle()">2022</div>
-    <div class="vec-demo__text">
-      <p>
-        The library Vue Event Creator helps to schedule events in easy way. It’s
-        very convenient for companies that have a lot of similar events, first
-        of all repeated events like training courses, sport events, seminars.
-        For example, we have the event that occurs twice a week for a month. The
-        title and description are the same, just the dates are different. In
-        general it takes enough time to fill up that info (and it’s boring), Vue
-        Event Creator fasts the process. And yes, the interface looks nice.
+  <header class="vec-demo__nav">
+    <a class="vec-demo__brand" href="#"
+      >Vue Event Creator<span> / Vue 3</span></a
+    >
+    <a href="https://github.com/a-dev/vue-event-creator">GitHub ↗</a>
+  </header>
+  <main>
+    <section class="vec-demo__hero" aria-labelledby="demo-title">
+      <div class="vec-demo__explanation">
+        <h1 id="demo-title">More events.<br />Less déjà vu.</h1>
+        <p>
+          Say you’re organizing a course that runs twice a week for a month.
+          Same title, same description, different dates. By the fifth form,
+          you’re probably wondering why you’re typing it all again.
+        </p>
+        <p>
+          That’s the sort of work Vue Event Creator is meant to help with. It’s
+          a Vue 3 library for admin interfaces where people schedule lots of
+          similar events, from training courses to sports sessions. You pick
+          dates on the calendar and edit the events together, with default times
+          for new events. Everything stays in view.
+        </p>
+        <p>
+          And the details are yours to decide. Add a Vue component with the
+          fields and default values your events need: perhaps a title, a venue,
+          or the instructor who somehow teaches everything. The library handles
+          the calendar and time controls; your application handles the data and
+          saving.
+        </p>
+        <p>
+          There’s a working example below. If you’d like to use it in your own
+          project, the
+          <a href="https://github.com/a-dev/vue-event-creator#readme">README</a>
+          explains the setup and API.
+        </p>
+      </div>
+    </section>
+    <section
+      id="playground"
+      class="vec-demo__playground"
+      aria-labelledby="playground-title"
+    >
+      <div class="vec-demo__toolbar">
+        <div>
+          <h2 id="playground-title">A little room to play</h2>
+        </div>
+        <div class="vec-demo__locales" role="group" aria-label="Demo language">
+          <span>Language</span>
+          <button
+            v-for="lang in ['en', 'es', 'ru'] as const"
+            :key="lang"
+            type="button"
+            :aria-pressed="locale === lang"
+            class="vec-demo__locales-button"
+            @click="changeLang(lang)"
+          >
+            {{ { en: 'En', es: 'Es', ru: 'Ru' }[lang] }}
+          </button>
+        </div>
+      </div>
+      <p class="vec-demo__note">
+        To add an event, select an empty start date and an end date. For a
+        single-day event, select the same date twice. Selecting a scheduled day
+        brings its event card into view. Changes in this demo last until you
+        refresh, so it’s fine to make a mess.
       </p>
-      <p>
-        By the way, you can customize the dates of event and add to them
-        additional properties that suit your aim: title, content, select, tags
-        and so on.
-      </p>
-      <p>
-        <a href="https://github.com/a-dev/vue-event-creator">More on Github</a>
-      </p>
-    </div>
-    <hr class="vec-demo__divider" />
-    <div class="vec-demo__locales">
-      <span class="vec-demo__locales-text">Choose language:</span>
-      <button
-        :disabled="locale == 'en'"
-        class="vec-demo__locales-button"
-        @click="changeLang('en')"
-      >
-        En</button
-      ><button
-        :disabled="locale == 'es'"
-        class="vec-demo__locales-button"
-        @click="changeLang('es')"
-      >
-        Es</button
-      ><button
-        :disabled="locale == 'ru'"
-        class="vec-demo__locales-button"
-        @click="changeLang('ru')"
-      >
-        Ru
-      </button>
-    </div>
-  </div>
-  <vue-event-creator
-    :language="locale"
-    :firstDate="firstDate"
-    :saveEventFn="saveEventFn"
-    :getEventsFn="getEventsFn"
-    :eventComponent="DemoEventComponent"
-  ></vue-event-creator>
+      <vue-event-creator
+        :language="locale"
+        :firstDate="firstDate"
+        :saveEventFn="saveEventFn"
+        :getEventsFn="getEventsFn"
+        :eventComponent="DemoEventComponent"
+      />
+    </section>
+    <section class="vec-demo__about" aria-label="About the component">
+      <div>
+        <h2>Your events.<br />Your fields.</h2>
+      </div>
+      <div>
+        <p>
+          The dark section in these cards is the demo’s own Vue component,
+          passed to the library through the eventComponent prop. It’s a simple
+          example of how your form can work alongside the built-in date and time
+          controls.
+        </p>
+        <a href="https://github.com/a-dev/vue-event-creator#readme"
+          >Documentation ↗</a
+        >
+      </div>
+    </section>
+  </main>
+  <footer class="vec-demo__bottom">
+    <ul>
+      <li>
+        <a href="https://github.com/a-dev/vue-event-creator/blob/main/LICENSE"
+          >MIT License</a
+        >, 2026
+      </li>
+      <li>built by <a href="https://github.com/a-dev">@a-dev</a></li>
+      <li>
+        <a href="https://github.com/a-dev/vue-event-creator"
+          >Vue Event Creator</a
+        >
+      </li>
+    </ul>
+  </footer>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
@@ -104,22 +152,12 @@ export default defineComponent({
       locale.value = lang;
     };
 
-    const phantomStyle = () => {
-      const rand = (limit: number) => Math.floor(Math.random() * limit) + 1;
-      return {
-        top: rand(80) + '%',
-        left: rand(80) + '%',
-        'font-size': rand(25) + 'vw',
-      };
-    };
-
     return {
       getEventsFn,
       DemoEventComponent,
       saveEventFn,
       changeLang,
       locale,
-      phantomStyle,
       firstDate,
     };
   },
@@ -128,114 +166,191 @@ export default defineComponent({
 <style>
 body {
   margin: 0;
-
   color: #44464c;
-
+  background: hsl(232, 5%, 99%);
   font-family: 'Lato', sans-serif;
-  font-size: 20px;
-  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .vec-demo {
-  margin: 2rem 0;
-}
-
-.vec-demo .vec-body {
-  max-width: 1024px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 48px);
 }
 
-.vec-demo__title {
-  margin: 6rem 0;
-
-  text-align: center;
-
-  font-size: clamp(2rem, 10vw, 4rem);
-  font-weight: 900;
-  line-height: 1;
-}
-
-.vec-demo__description {
-  position: relative;
-
-  overflow: hidden;
-
-  box-sizing: border-box;
-  margin-bottom: 2rem;
-  padding: 3rem 1.5rem;
-
-  background-color: #d9eff4;
-}
-
-.vec-demo__text {
-  position: relative;
-
-  max-width: 52ch;
-  margin: 0 auto;
-
-  font-size: 1.09rem;
-  line-height: 1.69;
-}
-
-.vec-demo__text p {
-  margin: 0 0 1rem 0;
-}
-
-.vec-demo__text a {
+.vec-demo a {
   color: #213eff;
+  text-underline-offset: 4px;
+}
+.vec-demo a:focus-visible,
+.vec-demo button:focus-visible {
+  outline: 3px solid hsl(201, 76%, 72%);
+  outline-offset: 4px;
 }
 
-.vec-demo__divider {
-  height: 1px;
-  margin: 3rem 0 3rem;
-
-  border: 0;
-  background-image: linear-gradient(to right, #d9eff4, #999894, #d9eff4);
+.vec-demo__nav,
+.vec-demo__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 28px 0;
+  font-size: 14px;
 }
 
-.vec-demo__locales {
-  position: relative;
+.vec-demo__nav .vec-demo__brand {
+  color: #44464c;
+  font-weight: 900;
+  text-decoration: none;
+}
+.vec-demo__brand span {
+  font-weight: 400;
+  margin-left: 8px;
+}
 
+.vec-demo__hero {
+  margin: 24px 0 48px;
+  padding: clamp(24px, 4vw, 40px);
+  background: #d9eff4;
+}
+
+.vec-demo__explanation {
+  max-width: 70ch;
+  margin: 0 auto;
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.vec-demo h1 {
+  margin: 0 0 24px;
+  color: #212529;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.vec-demo__explanation p {
+  margin: 0 0 20px;
+}
+.vec-demo__explanation p:last-child {
+  margin-bottom: 0;
+}
+
+.vec-demo__playground {
+  scroll-margin-top: 24px;
+}
+.vec-demo__toolbar {
   display: flex;
   align-items: center;
-  justify-content: center;
-
-  font-size: 0.9rem;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
 }
-
-.vec-demo__locales-text {
-  margin-right: 0.5rem;
+.vec-demo__toolbar h2,
+.vec-demo__about h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: #212529;
 }
-
+.vec-demo__note {
+  margin: 16px 0 28px;
+  font-size: 14px;
+}
+.vec-demo__locales {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.vec-demo__locales > span {
+  margin-right: 8px;
+}
 .vec-demo__locales-button {
-  margin: 0 0.25rem;
-  padding: 0.2rem 0.6rem;
-
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
   cursor: pointer;
-
+  color: #44464c;
+  border: 1px solid hsl(113, 0%, 81%);
+  background: transparent;
+  font: inherit;
+}
+.vec-demo__locales-button[aria-pressed='true'] {
+  background: #415aff;
+  border-color: #415aff;
   color: white;
-  border: none;
-  border-radius: 0.25rem;
-  background-color: #415aff;
-
-  font-size: 0.8rem;
+}
+.vec-demo__about {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 32px;
+  padding: 40px;
+  margin-top: 64px;
+  background: #d9eff4;
+}
+.vec-demo__about p {
+  margin-top: 0;
+}
+.vec-demo__bottom {
+  justify-content: center;
+  margin-top: 32px;
+  padding-bottom: 36px;
+}
+.vec-demo__bottom ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.vec-demo__bottom li + li::before {
+  content: '•';
+  margin-inline: 12px;
+}
+.vec-demo__bottom a {
+  color: inherit;
 }
 
-.vec-demo__locales-button:hover {
-  background-color: #213eff;
+/* Same area-matched squircle fallback as the library. */
+.vec-demo__hero,
+.vec-demo__about {
+  --demo-radius: 48px;
+}
+.vec-demo__locales-button {
+  --demo-radius: 16px;
+}
+.vec-demo__hero,
+.vec-demo__about,
+.vec-demo__locales-button {
+  border-radius: calc(var(--demo-radius) * 0.5831);
+}
+@supports (corner-shape: squircle) {
+  .vec-demo__hero,
+  .vec-demo__about,
+  .vec-demo__locales-button {
+    border-radius: var(--demo-radius);
+    corner-shape: squircle;
+  }
 }
 
-.vec-demo__locales-button:disabled {
-  pointer-events: none;
-
-  background-color: #999894;
-}
-
-/* phantom */
-.vec-demo__phantom {
-  position: absolute;
-
-  opacity: 0.2;
-  color: #bfdee3;
+@media (max-width: 767px) {
+  .vec-demo__hero {
+    margin: 8px 0 40px;
+  }
+  .vec-demo__about {
+    grid-template-columns: 1fr;
+    padding: 24px;
+    margin-top: 40px;
+  }
+  .vec-demo__nav {
+    font-size: 12px;
+    padding: 20px 0;
+  }
 }
 </style>

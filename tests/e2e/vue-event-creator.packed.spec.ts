@@ -6,7 +6,15 @@ test('the packed ESM package completes the critical event journey', async ({
   await page.goto('/');
   await expect(page.locator('.vec-event')).toHaveCount(1);
   await expect(page.locator('.vec-event')).toContainText('Package smoke test');
-  await expect(page.locator('.vec-event')).toHaveCSS('border-radius', '5px');
+  const supportsSquircle = await page.evaluate(() =>
+    CSS.supports('corner-shape', 'squircle'),
+  );
+  const radius = await page
+    .locator('.vec-event')
+    .evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).borderRadius),
+    );
+  expect(radius).toBeCloseTo(supportsSquircle ? 28 : 16.3268, 3);
 
   const day = page.getByRole('button', { name: '2026-09-06' });
   await day.click();

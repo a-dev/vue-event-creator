@@ -4,7 +4,8 @@
   overflow: hidden;
 
   border: 2px solid var(--vec-color-transparent);
-  border-radius: 5px;
+  min-width: 0;
+  scroll-margin-block: 24px;
 }
 
 .vec-event_focused {
@@ -33,44 +34,48 @@
   background-color: var(--vec-color-warning);
 }
 
-.vec-event:not(:last-child) {
-  margin-bottom: 35px;
-}
-
 .vec-event__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   box-sizing: border-box;
-  min-height: 50px;
-  padding: 5px 15px;
+  min-height: 44px;
+  padding: 10px 16px;
 
   color: var(--vec-color-text-primary);
-  background-color: var(--vec-color-tertiaty);
+  background-color: var(--vec-color-tertiary);
 
-  font-size: var(--vec-fs-s);
+  font-size: var(--vec-fs-xs);
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.5;
 }
 
 .vec-event__set-time {
+  container: vec-event-time / inline-size;
+
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 
   box-sizing: border-box;
-  min-height: 50px;
-  padding: 10px 15px;
+  min-height: 44px;
+  padding: 8px 8px 8px 16px;
 
   background-color: var(--vec-color-gray-light);
 
   font-size: var(--vec-fs-xs);
-  line-height: 1;
+  line-height: 1.5;
 }
 
 .vec-event__set-time .vec-button {
-  margin: 5px 0 5px auto;
+  margin: 0;
+}
+
+@container vec-event-time (width >= 600px) {
+  .vec-event__set-time .vec-button {
+    margin: 0 0 0 auto;
+  }
 }
 
 .vec-event__footer {
@@ -78,24 +83,82 @@
   align-items: center;
   justify-content: space-between;
 
-  padding: 10px 15px;
+  padding: 8px 8px;
 
   color: var(--vec-color-white);
   background-color: var(--vec-color-gray-light);
 }
 
 .vec-event__footer .vec-button:nth-child(2) {
-  margin-right: 0.5rem;
   margin-left: auto;
 }
 
 .vec-event__server-error {
   box-sizing: border-box;
-  padding: 10px 15px;
+  padding: 8px 16px;
 
   color: var(--vec-color-white);
   border: 5px solid currentColor;
   background-color: var(--vec-color-warning);
 
   font-size: var(--vec-fs-xs);
+}
+
+.vec-event__dates {
+  overflow-wrap: anywhere;
+}
+
+.vec-event__set-time,
+.vec-event__footer {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vec-event__set-time label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 420px) {
+  .vec-event__header,
+  .vec-event__set-time,
+  .vec-event__footer,
+  .vec-events-default-time {
+    padding: 8px 12px;
+  }
+
+  .vec-event__footer .vec-button {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding-inline: 10px;
+  }
+}
+
+/* Saved cards put dates and actions on one line when there is room.
+   Editors keep their full-width fields and bottom action bar. */
+@media (min-width: 1024px) {
+  .vec-event:not(.vec-event_editing) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .vec-event:not(.vec-event_editing) .vec-event__header {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .vec-event:not(.vec-event_editing) .vec-event__footer {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 8px;
+    padding-left: 0;
+    background-color: var(--vec-color-tertiary);
+  }
+
+  .vec-event__content,
+  .vec-event__server-error {
+    grid-column: 1 / -1;
+  }
 }

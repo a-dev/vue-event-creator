@@ -92,3 +92,57 @@ test('supports keyboard-only event creation and editing', async ({ page }) => {
     page.locator('.vec-event').filter({ hasText: 'Keyboard event' }),
   ).not.toHaveClass(/vec-event_editing/);
 });
+
+for (const width of [320, 375, 768]) {
+  test(`keeps the planner usable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 812 });
+    const calendar = page.locator('.vec-calendar');
+    const toggle = page.getByRole('button', { name: 'Toggle calendar' });
+    if (width < 768) {
+      await expect(calendar).toBeHidden();
+      await toggle.focus();
+      await page.keyboard.press('Tab');
+      await expect(page.getByLabel('Default time from')).toBeFocused();
+      await toggle.click();
+      await expect(calendar).toBeVisible();
+      await expect(toggle).toHaveAttribute(
+        'aria-controls',
+        (await calendar.getAttribute('id')) as string,
+      );
+    }
+
+    const day = page.getByRole('button', { name: '2026-09-11' });
+    const box = await day.boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(32);
+    expect(box?.height).toBeGreaterThanOrEqual(40);
+    await day.click();
+    await day.click();
+    const title = page.getByLabel('Event title');
+    await expect(title).toBeFocused();
+    await title.fill('A mobile workshop');
+    await page
+      .getByLabel('Event description')
+      .fill('A useful event with room for details.');
+    await page.getByLabel('Event start time').fill('09:30');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    const card = page
+      .locator('.vec-event')
+      .filter({ hasText: '11 September 2026' });
+    await expect(card).toContainText('09:30');
+    await card.getByRole('button', { name: 'Edit', exact: true }).click();
+    await card.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await card.getByRole('button', { name: 'Remove', exact: true }).click();
+    await card.getByRole('button', { name: 'No', exact: true }).click();
+    await expect(card).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width);
+
+    if (width < 768) {
+      await toggle.focus();
+      await page.keyboard.press('Enter');
+      await expect(calendar).toBeHidden();
+      await expect(toggle).toBeFocused();
+    }
+  });
+}

@@ -18,6 +18,7 @@ import type {
   SaveEventFn,
 } from '../../src/types/public';
 import { userEvent } from 'vitest/browser';
+import '../../src/styles/event.css';
 
 enableAutoUnmount(afterEach);
 
@@ -64,6 +65,38 @@ describe('Edit, save and remove an event', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  test('Default-time button alignment follows the time row width', async () => {
+    const wrapper = mount(VECEvent, {
+      attachTo: document.body,
+      props: {
+        ...defaultProps,
+        event: {
+          ...defaultProps.event,
+          editing: true,
+          startsAt: new Date('2021-09-02T11:00:00.000Z'),
+        },
+      },
+      global: { provide: defaultProvide },
+    });
+    const row = wrapper.get<HTMLElement>('.vec-event__set-time').element;
+    const button = wrapper.get<HTMLButtonElement>(
+      '.vec-event__set-time button',
+    ).element;
+
+    // Fix the content width independently of viewport size and row padding.
+    row.style.boxSizing = 'content-box';
+    row.style.width = '599px';
+    await expect.poll(() => getComputedStyle(button).marginLeft).toBe('0px');
+
+    row.style.width = '600px';
+    await expect
+      .poll(() => parseFloat(getComputedStyle(button).marginLeft))
+      .toBeGreaterThan(0);
+
+    row.style.width = '599px';
+    await expect.poll(() => getComputedStyle(button).marginLeft).toBe('0px');
   });
 
   test("The event's card will focused when the focusedEvent state changes", async () => {

@@ -1,21 +1,24 @@
 <template>
   <div class="vec-events-default-time">
+    <div class="vec-events-dt__title">{{ i18n.t('default_time_title') }}</div>
     <div class="vec-events-dt__inputs">
-      <span>{{ i18n.t('default_time_title') }}:&nbsp;</span>
-      <span>{{ i18n.t('time_from') }}&nbsp;</span>
-      <input
-        type="time"
-        :aria-label="`${i18n.t('default_time_title')} ${i18n.t('time_from')}`"
-        v-model="defaultTimeState.startsAtTime"
-        class="vec-event__time-input vec-events-dt__input"
-      />
-      <span>{{ i18n.t('time_till') }}&nbsp;</span>
-      <input
-        type="time"
-        :aria-label="`${i18n.t('default_time_title')} ${i18n.t('time_till')}`"
-        v-model="defaultTimeState.finishesAtTime"
-        class="vec-event__time-input vec-events-dt__input"
-      />
+      <label
+        ><span>{{ i18n.t('time_from') }}</span>
+        <input
+          type="time"
+          :aria-label="`${i18n.t('default_time_title')} ${i18n.t('time_from')}`"
+          v-model="defaultTimeState.startsAtTime"
+          class="vec-event__time-input vec-events-dt__input"
+        /> </label
+      ><label
+        ><span>{{ i18n.t('time_till') }}</span>
+        <input
+          type="time"
+          :aria-label="`${i18n.t('default_time_title')} ${i18n.t('time_till')}`"
+          v-model="defaultTimeState.finishesAtTime"
+          class="vec-event__time-input vec-events-dt__input"
+        />
+      </label>
     </div>
     <div class="vec-events-dt__prompt">
       {{ i18n.t('default_time_prompt') }}

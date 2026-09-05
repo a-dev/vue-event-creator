@@ -36,6 +36,8 @@ A breaking release. See [MIGRATION.md](MIGRATION.md) for the upgrade guide.
 
 ### Fixed
 
+- Event editor default-time button alignment responds to its time-controls row
+  width rather than the viewport width.
 - An event id of `0` is treated as a saved id instead of an unsaved draft.
 - Two calendars mounted at once no longer share a locale, steal each other's
   focus, or scroll each other's event cards.
@@ -49,6 +51,17 @@ A breaking release. See [MIGRATION.md](MIGRATION.md) for the upgrade guide.
 - Consumer-supplied events and data objects are never mutated.
 
 ### Added
+
+- Roomier calendar and event cards, grouped time fields, larger action targets,
+  and an inline mobile calendar disclosure that does not cover event editors.
+- Squircle panels and controls with an area-matched circular fallback and
+  configurable `--vec-radius-panel` / `--vec-radius-control` variables. The
+  existing color palette is preserved.
+- Rounder calendar days with an area-matched fallback.
+- Compact saved cards with dates and actions in a shared desktop header, less
+  repeated demo copy, and button hover outlines instead of underlined text.
+- A redesigned demo with a conversational explanation of the scheduling use
+  case, labeled editing fields, and an MIT license and author footer.
 
 - `MIGRATION.md`, a rewritten `README.md`, and documented Node/browser support,
   time-zone semantics, overlap constraints, and the release process.

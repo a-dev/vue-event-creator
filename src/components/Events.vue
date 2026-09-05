@@ -1,7 +1,6 @@
 <template>
-  <div ref="eventsRoot" class="vec-events__wrapper">
+  <div ref="eventsRoot" class="vec-events">
     <vec-default-time-component />
-    <div class="vec-events">
       <vec-event-component
         v-for="event in events"
         :key="`es-id-${event.es_id}`"
@@ -11,7 +10,6 @@
         :removeEventFn="removeEventFn"
         :eventComponent="eventComponent"
       />
-    </div>
   </div>
 </template>
 <script lang="ts">

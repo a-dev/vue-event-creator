@@ -41,6 +41,7 @@ describe('Calendar data initialize', () => {
     expect(buttonBefore.text()).toBe('More before');
     expect(buttonAfter.text()).toBe('More after');
 
+    await wrapper.get('.vec-calendar__switcher').trigger('click');
     await userEvent.click(buttonBefore.element);
     await userEvent.click(buttonAfter.element);
 

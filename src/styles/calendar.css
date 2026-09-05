@@ -2,18 +2,15 @@
   position: sticky;
   z-index: var(--vec-z-index-calendar);
   top: 0;
-
-  min-width: 280px;
 }
 
 .vec-calendar {
   box-sizing: border-box;
-  height: 100%;
-  min-height: 420px;
+  width: 100%;
+  min-height: 320px;
   max-height: var(--vec-calendar-max-height);
 
   border: 1px solid var(--vec-color-gray-light);
-  border-radius: 3px;
 
   justify-self: center;
 }
@@ -23,13 +20,14 @@
   justify-content: center;
 
   width: 100%;
-  padding: 3px 0;
+  box-sizing: border-box;
+  padding: 8px 12px;
 
   background-color: var(--vec-color-gray-light);
 
-  grid-template-columns: repeat(7, 30px);
-  grid-auto-rows: 30px;
-  row-gap: 6px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 32px;
+
   column-gap: 4px;
 }
 
@@ -52,7 +50,11 @@
 
   width: 100%;
   margin: 0;
-  padding: 7px 20px 5px;
+  min-height: 44px;
+  gap: 8px;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: var(--vec-fs-xs);
 
   cursor: pointer;
   transition: opacity 0.25s;
@@ -61,7 +63,7 @@
 
   color: var(--vec-color-text-secondary);
   border: none;
-  background-color: var(--vec-color-tertiaty);
+  background-color: var(--vec-color-tertiary);
 }
 
 @media (hover: hover) {

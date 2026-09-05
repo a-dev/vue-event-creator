@@ -8,6 +8,7 @@
     :class="[
       {
         'vec-day_weekend': isWeekend,
+        'vec-day_week-start': isWeekStart,
         'vec-day_scheduled': day.es_id,
         'vec-day_start-day': isStartDay,
         'vec-day_choosing': day.choosing,
@@ -28,6 +29,8 @@ import {
   VecDayData,
   VecMonthId,
 } from '../types/internal';
+import dayjs from '../lib/dayjs';
+import { useI18n } from '../locales';
 import { makeFormatDayDD } from '../hooks/useCalendarActions';
 
 interface DayProps {
@@ -53,6 +56,14 @@ export default {
     },
   },
   setup(props: DayProps) {
+    const i18n = useI18n();
+    const isWeekStart = computed(() => {
+      const weekday = (props.day.id + props.shift - 1) % 7;
+      return (
+        weekday ===
+        dayjs().locale(i18n.language.value).localeData().firstDayOfWeek()
+      );
+    });
     const isWeekend = computed(() => {
       const a = (props.day.id + props.shift - 1) % 7;
       return a === 6 || a === 0;
@@ -115,6 +126,7 @@ export default {
 
     return {
       isWeekend,
+      isWeekStart,
       clickOnDay,
       isEventFocused,
       isStartDay,
