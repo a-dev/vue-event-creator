@@ -149,12 +149,13 @@ export default defineComponent({
 
     const focusedEventState = ref(null) as VecFocusedEventState;
 
-    const { calendarFillEvents, setEventOnChoosingDays } = useCalendarActions(
-      calendarState,
-      eventsState,
-      choosingDatesState,
-      focusedEventState,
-    );
+    const { calendarFillEvents, addMonthsToCalendar, setEventOnChoosingDays } =
+      useCalendarActions(
+        calendarState,
+        eventsState,
+        choosingDatesState,
+        focusedEventState,
+      );
 
     const validateLoadedEvents = (events: Awaited<ReturnType<GetEventsFn>>) => {
       const ordered = [...events].sort(
@@ -298,6 +299,7 @@ export default defineComponent({
     });
 
     provide('calendarState', calendarState);
+    provide('addMonthsToCalendar', addMonthsToCalendar);
     provide('eventsState', eventsState);
     provide('choosingDatesState', choosingDatesState);
     provide('focusedEventState', focusedEventState);

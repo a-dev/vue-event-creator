@@ -7,6 +7,8 @@ import {
   useCalendarActions,
   nullifyChoosingDatesState,
 } from '../../src/hooks/useCalendarActions';
+import { calculateMonthsAndDays } from '../../src/hooks/calendarBuildActions';
+import type { VecMonthWithDates } from '../../src/types/internal';
 import { ref } from 'vue';
 import { July2021CalendarState, createEventsWithDates } from './utils';
 import { describe, expect, test } from 'vitest';
@@ -184,3 +186,93 @@ function calendarFillEventsFor(
     ref(null),
   ).calendarFillEvents();
 }
+
+describe('Adding months fills them from the current events', () => {
+  // Built directly, so this stays independent of the initial-range fix: the
+  // calendar deliberately stops in August while a September event exists.
+  const setupMayToAugust = () => {
+    const calendarState = {
+      months: calculateMonthsAndDays(
+        [],
+        new Date(2026, 4, 1),
+        new Date(2026, 7, 1),
+      ),
+    };
+    const events = ref(
+      createEventsWithDates(['2026-05-22:2026-05-24', '2026-09-04:2026-09-06']),
+    );
+    const actions = useCalendarActions(
+      calendarState,
+      events,
+      { startsAtId: null, finishesAtId: null },
+      ref(null),
+    );
+    actions.calendarFillEvents();
+
+    return { calendarState, events, ...actions };
+  };
+
+  const findMonth = (
+    calendarState: { months: VecMonthWithDates[] },
+    id: string,
+  ) => calendarState.months.find((month) => month.id === id);
+
+  test('Appended months receive the saved event ids', () => {
+    const { calendarState, addMonthsToCalendar } = setupMayToAugust();
+    expect(findMonth(calendarState, '202609')).toBeUndefined();
+
+    addMonthsToCalendar('after');
+
+    const september = findMonth(calendarState, '202609')!;
+    expect(september).toBeDefined();
+    expect(september.days[3].es_id).toBe(20260904);
+    expect(september.days[4].es_id).toBe(20260904);
+    expect(september.days[5].es_id).toBe(20260904);
+    expect(september.days[6].es_id).toBe(null);
+  });
+
+  test('Prepended months receive the saved event ids', () => {
+    const calendarState = {
+      months: calculateMonthsAndDays(
+        [],
+        new Date(2026, 4, 1),
+        new Date(2026, 6, 1),
+      ),
+    };
+    const events = ref(createEventsWithDates(['2026-03-10:2026-03-12']));
+    const { addMonthsToCalendar, calendarFillEvents } = useCalendarActions(
+      calendarState,
+      events,
+      { startsAtId: null, finishesAtId: null },
+      ref(null),
+    );
+    calendarFillEvents();
+
+    addMonthsToCalendar('before');
+
+    const march = findMonth(calendarState, '202603')!;
+    expect(march).toBeDefined();
+    expect(march.days[9].es_id).toBe(20260310);
+    expect(march.days[11].es_id).toBe(20260310);
+    expect(calendarState.months[0].id).toBe('202602');
+  });
+
+  test('Expanding preserves existing markers, editing and choosing state', () => {
+    const { calendarState, events, addMonthsToCalendar } = setupMayToAugust();
+    events.value[0].editing = true;
+    setValueToDate(calendarState, new Date(2026, 6, 15), { choosing: true });
+
+    addMonthsToCalendar('after');
+
+    const may = findMonth(calendarState, '202605')!;
+    expect(may.days[21].es_id).toBe(20260522);
+    expect(may.days[23].es_id).toBe(20260522);
+    expect(may.days[21].editing).toBe(true);
+
+    expect(findMonth(calendarState, '202607')!.days[14].choosing).toBe(true);
+    expect(events.value).toHaveLength(2);
+    expect(calendarState.months.map((month) => month.id)).toEqual([
+      ...new Set(calendarState.months.map((month) => month.id)),
+    ]);
+  });
+});

@@ -272,6 +272,7 @@ Import the stylesheet once, then override the CSS custom properties on the
   --vec-color-text-primary: red;
   --vec-color-primary: blue;
   --vec-calendar-max-height: calc(100vh - 3rem);
+  --vec-calendar-max-width: 32rem;
   /* and more... */
 }
 </style>

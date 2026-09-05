@@ -1,3 +1,37 @@
+## 2.1.1
+
+A patch release for the 2.1.0 redesign: saved events could vanish from the
+calendar, and day cells lost their circular shape on medium-width screens. Props,
+callbacks, event data, locale keys, CSS entry point, and package exports are
+unchanged, and the one new CSS variable is additive — upgrading from 2.1.0
+requires no changes.
+
+### Added
+
+- `--vec-calendar-max-width` (350px) caps the calendar's width. It only takes
+  effect below the 768px breakpoint, where the calendar is no longer confined
+  to the sidebar column.
+
+### Fixed
+
+- **Saved events whose month fell just outside the initial range no longer
+  disappear from the calendar.** The initial range compared whole *elapsed*
+  months between raw event timestamps, so a calendar anchored on 22 May with a
+  last event finishing 6 September measured three months and stopped in August.
+  The range is now derived from calendar-month boundaries, and the last event's
+  month is always rendered. `monthsOnPage` keeps its documented meaning.
+- **"More before" / "More after" now mark saved events in the months they
+  add.** Month expansion only replaced the month array, so newly created days
+  were left empty and dates in them rendered as unscheduled. Expansion and
+  event filling are one action, and existing markers, editing, and selection
+  state survive it.
+- **Day cells no longer stretch into ovals on medium-width screens.** Below
+  768px the calendar filled the full container, so around 750px each of the
+  seven columns grew to roughly 90px against a 40px row and the circular day
+  shape flattened. The calendar is now capped at `--vec-calendar-max-width` and
+  centered, and day cells hold a square aspect ratio with their 40px minimum
+  touch target intact, so they stay circular at every width.
+
 ## 2.1.0
 
 A visual redesign of the calendar and event cards, with the interaction changes

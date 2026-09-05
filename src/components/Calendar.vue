@@ -38,7 +38,6 @@ import type { VecCalendarState } from '../types/internal';
 import { useI18n } from '../locales/index';
 import dayjs from '../lib/dayjs';
 import VecMonth from './Month.vue';
-import { calendarAddMonths } from '../hooks/calendarBuildActions';
 
 export default defineComponent({
   name: 'VECCalendar',
@@ -49,12 +48,11 @@ export default defineComponent({
     const calendarState = inject('calendarState') as VecCalendarState;
     const i18n = useI18n();
 
-    const addMonthsToCalendar = (direction: 'before' | 'after') => {
-      calendarState.months = calendarAddMonths(
-        calendarState,
-        direction,
-      ).slice();
-    };
+    // The parent owns event state, so expansion goes through its shared action
+    // and the appended months are filled from the current events.
+    const addMonthsToCalendar = inject('addMonthsToCalendar') as (
+      direction: 'before' | 'after',
+    ) => void;
 
     const weekDaysArray = computed(() => {
       const localeData = dayjs().locale(i18n.language.value).localeData();

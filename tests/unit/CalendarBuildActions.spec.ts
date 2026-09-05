@@ -144,3 +144,64 @@ describe('Add months to the created calendar', () => {
     expect(result[8].id).toBe('202203');
   });
 });
+
+describe('Initial range covers the last event month (calendar-month boundaries)', () => {
+  // Regression: May 22 -> September 6 is only three *elapsed* months, but four
+  // calendar months. Comparing elapsed months dropped September from the range.
+  test('Includes September when the anchor is a late-May event and monthsOnPage is 3', () => {
+    const events: VecEvent[] = createEventsWithDates([
+      '2026-05-22:2026-05-24',
+      '2026-09-04:2026-09-06',
+    ]);
+    const result = buildMonthsForCalendarState(new Date(2026, 8, 5), events, 3);
+    const ids = result.map((month) => month.id);
+
+    expect(ids).toContain('202609');
+    expect(ids).toEqual(['202605', '202606', '202607', '202608', '202609']);
+  });
+
+  test('Includes the finish month when an event starts late and finishes early', () => {
+    const events: VecEvent[] = createEventsWithDates([
+      '2026-01-31:2026-01-31',
+      '2026-05-01:2026-05-01',
+    ]);
+    const result = buildMonthsForCalendarState(
+      new Date(2026, 0, 31),
+      events,
+      3,
+    );
+
+    expect(result.map((month) => month.id)).toEqual([
+      '202601',
+      '202602',
+      '202603',
+      '202604',
+      '202605',
+    ]);
+  });
+
+  test('Crosses a year boundary from December into January', () => {
+    const events: VecEvent[] = createEventsWithDates(['2026-12-30:2027-01-02']);
+    const result = buildMonthsForCalendarState(
+      new Date(2026, 11, 30),
+      events,
+      1,
+    );
+    const ids = result.map((month) => month.id);
+
+    expect(ids[0]).toBe('202612');
+    expect(ids).toContain('202701');
+  });
+
+  test('Keeps the default range length when events finish inside it', () => {
+    const events: VecEvent[] = createEventsWithDates(['2021-08-02:2021-08-02']);
+    const result = buildMonthsForCalendarState(FIRST_OF_JULY_DATE, events, 3);
+
+    expect(result.map((month) => month.id)).toEqual([
+      '202107',
+      '202108',
+      '202109',
+      '202110',
+    ]);
+  });
+});
