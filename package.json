@@ -1,6 +1,6 @@
 {
   "name": "vue-event-creator",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Vue.js library for an admin interface: easy way to schedule events in the calendar",
   "homepage": "https://a-dev.github.io/vue-event-creator/",
   "bugs": {
@@ -91,7 +91,7 @@
     "vue-tsc": "^3.3"
   },
   "peerDependencies": {
-    "vue": "^3.x"
+    "vue": "^3.5.0"
   },
   "engines": {
     "node": ">=24.0.0"

@@ -8,58 +8,57 @@
   line-height: var(--vec-lh-m);
 }
 
+/* Inline disclosure on compact screens; the calendar never covers an editor. */
 .vec-calendar {
-  position: fixed;
-  z-index: var(--vec-z-index-calendar);
-  top: 1rem;
-  left: -270px;
-
-  overflow-x: hidden;
-  overflow-y: scroll;
-
-  transition: left 0.25s;
-
+  overflow: auto;
+  overscroll-behavior: contain;
   background-color: var(--vec-color-background);
 }
 
 .vec-calendar__switcher {
-  position: fixed;
-  z-index: var(--vec-z-index-calendar);
-  top: 45px;
-  left: 12px;
-
-  box-sizing: border-box;
-  width: 40px;
-  height: 40px;
-
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: left 0.25s;
-
-  opacity: 1;
-  color: var(--vec-color-primary);
+  color: var(--vec-color-text-secondary);
   border: 1px solid var(--vec-color-gray);
-  border-left: none;
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
   background-color: var(--vec-color-gray-light);
+  font: inherit;
+  font-size: var(--vec-fs-xs);
 }
 
-.vec-calendar__switcher_on {
-  left: 280px;
+.vec-calendar__switcher:not(.vec-calendar__switcher_on) ~ .vec-calendar {
+  display: none;
 }
+
 .vec-calendar__switcher_on ~ .vec-calendar {
-  left: 0;
+  display: block;
+  margin-bottom: 24px;
+}
+
+.vec-events {
+  display: grid;
+  gap: 1.4rem;
 }
 
 @media (min-width: 768px) {
   .vec-body {
     display: grid;
-
-    grid-template-columns: 300px 1fr;
+    align-items: start;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: clamp(20px, 3vw, 40px);
   }
-  .vec-body .vec-calendar {
+
+  .vec-body .vec-calendar__switcher ~ .vec-calendar {
+    display: block;
     position: sticky;
-    left: auto;
+    top: 20px;
+    margin-bottom: 0;
   }
 
   .vec-calendar__switcher {
@@ -67,8 +66,18 @@
   }
 }
 
-.vec-events__wrapper {
-  margin: 0 10px 0 20px;
+.vec-body :is(button, input, textarea, select):focus-visible {
+  outline: 3px solid var(--vec-color-secondary);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vec-body *,
+  .vec-body *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* loader */

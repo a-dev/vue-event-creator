@@ -1,0 +1,52 @@
+/* Area-matched circular fallback for superellipse(2), following
+   https://a-dev.github.io/probes/corner-shape/.
+   sqrt((1 - Gamma(1.25)^2 / Gamma(1.5)) / (1 - PI / 4)) ≈ 0.5831.
+   Keep outlines and borders intact: no clip-path is needed. */
+.vec-calendar,
+.vec-event,
+.vec-events-default-time {
+  --vec-shape-radius: var(--vec-radius-panel);
+}
+
+.vec-button,
+.vec-event__time-input,
+.vec-calendar__switcher,
+.vec-day {
+  --vec-shape-radius: var(--vec-radius-control);
+}
+
+.vec-calendar,
+.vec-event,
+.vec-events-default-time,
+.vec-button,
+.vec-event__time-input,
+.vec-calendar__switcher,
+.vec-day {
+  border-radius: calc(var(--vec-shape-radius) * 0.5831);
+}
+
+@supports (corner-shape: squircle) {
+  .vec-calendar,
+  .vec-event,
+  .vec-events-default-time,
+  .vec-button,
+  .vec-event__time-input,
+  .vec-calendar__switcher,
+  .vec-day {
+    border-radius: var(--vec-shape-radius);
+    corner-shape: squircle;
+  }
+}
+
+/* Days are closer to circles: superellipse(1.25), with its own
+   area-matched fallback ratio instead of the squircle ratio above. */
+.vec-day {
+  border-radius: 44.0821%;
+}
+
+@supports (corner-shape: superellipse(1.25)) {
+  .vec-day {
+    border-radius: 50%;
+    corner-shape: superellipse(1.25);
+  }
+}

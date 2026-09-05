@@ -22,20 +22,23 @@
       </div>
     </header>
     <div v-if="isEventEditing" class="vec-event__set-time">
-      <span>{{ i18n.t('time_from') }}&nbsp;</span>
-      <input
-        class="vec-event__time-input"
-        type="time"
-        :aria-label="i18n.t('event_start_time')"
-        v-model="eventTimeStartsAt"
-      />
-      <span>{{ i18n.t('time_till') }}&nbsp;</span>
-      <input
-        class="vec-event__time-input"
-        type="time"
-        :aria-label="i18n.t('event_finish_time')"
-        v-model="eventTimeFinishesAt"
-      />
+      <label
+        ><span>{{ i18n.t('time_from') }}</span>
+        <input
+          class="vec-event__time-input"
+          type="time"
+          :aria-label="i18n.t('event_start_time')"
+          v-model="eventTimeStartsAt"
+        /> </label
+      ><label
+        ><span>{{ i18n.t('time_till') }}</span>
+        <input
+          class="vec-event__time-input"
+          type="time"
+          :aria-label="i18n.t('event_finish_time')"
+          v-model="eventTimeFinishesAt"
+        />
+      </label>
       <button
         type="button"
         @click="setDefaultTime"
@@ -45,14 +48,14 @@
         {{ i18n.t('set_default_time') }}
       </button>
     </div>
-    <template v-if="eventComponent">
+    <div v-if="eventComponent" class="vec-event__content">
       <component
         :is="eventComponent"
         :isEventEditing="isEventEditing"
         :eventData="eventData"
         @update:eventData="eventData = $event"
       ></component>
-    </template>
+    </div>
     <div v-if="serverError" class="vec-event__server-error" role="alert">
       {{ serverError }}
     </div>

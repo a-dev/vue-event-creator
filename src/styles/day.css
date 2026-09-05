@@ -17,7 +17,6 @@
   color: var(--vec-color-text-secondary);
   background: transparent;
   border: 2px solid var(--vec-color-transparent);
-  border-radius: 50%;
 
   font-size: var(--vec-fs-xs);
   line-height: 1;
@@ -41,9 +40,10 @@
   position: relative;
 }
 
-.vec-day_scheduled + .vec-day_scheduled:not(.vec-day_start-day):before {
+.vec-day_scheduled
+  + .vec-day_scheduled:not(.vec-day_start-day, .vec-day_week-start):before {
   position: absolute;
-  top: 10px;
+  top: calc(50% - 3px);
   left: -8px;
 
   width: 8px;
@@ -55,12 +55,12 @@
 }
 
 .vec-day_scheduled.vec-day_editing
-  + .vec-day_scheduled:not(.vec-day_start-day):before {
+  + .vec-day_scheduled:not(.vec-day_start-day, .vec-day_week-start):before {
   background-color: var(--vec-color-warning);
 }
 
 .vec-day_scheduled.vec-day_focused:not(.vec-day_editing)
-  + .vec-day_scheduled:not(.vec-day_start-day):before {
+  + .vec-day_scheduled:not(.vec-day_start-day, .vec-day_week-start):before {
   background-color: var(--vec-color-secondary);
 }
 
@@ -72,4 +72,10 @@
   color: var(--vec-color-white);
   border-color: var(--vec-color-warning);
   background-color: var(--vec-color-warning);
+}
+
+@media (hover: hover) {
+  .vec-day:not(.vec-day_scheduled):hover {
+    background-color: var(--vec-color-tertiary);
+  }
 }

@@ -14,15 +14,21 @@
       class="vec-calendar__switcher"
       :class="{ 'vec-calendar__switcher_on': isSwitcherOn }"
       :aria-expanded="isSwitcherOn"
+      :aria-controls="calendarId"
       :aria-label="i18n.t('calendar_switcher')"
       @click="isSwitcherOn = !isSwitcherOn"
     >
-      <div
-        class="vec-chevron_l"
-        :class="{ 'vec-chevron_l-left': isSwitcherOn }"
-      ></div>
+      <span>{{ i18n.t('calendar_switcher') }}</span>
+      <span
+        aria-hidden="true"
+        :class="isSwitcherOn ? 'vec-chevron_up' : 'vec-chevron_down'"
+      ></span>
     </button>
-    <vec-calendar :firstDate="firstDate" :monthsOnPage="monthsOnPage" />
+    <vec-calendar
+      :id="calendarId"
+      :firstDate="firstDate"
+      :monthsOnPage="monthsOnPage"
+    />
     <vec-events
       :saveEventFn="saveEventFn"
       :editEventFn="editEventFn"
@@ -40,6 +46,7 @@ import {
   watch,
   ref,
   toRef,
+  useId,
   type Component,
   type PropType,
 } from 'vue';
@@ -119,6 +126,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const calendarId = useId();
     const loader = ref(true);
     const loadError = ref('');
     const isSwitcherOn = ref(false); // only for small screens
@@ -297,6 +305,7 @@ export default defineComponent({
 
     return {
       calendarState,
+      calendarId,
       loader,
       loadError,
       loadEvents,
@@ -318,3 +327,5 @@ export default defineComponent({
 <style src="./styles/default-time.css"></style>
 <style src="./styles/event.css"></style>
 <style src="./styles/guard-alert.css"></style>
+
+<style src="./styles/shapes.css"></style>

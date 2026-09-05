@@ -1,17 +1,15 @@
 <template>
-  <div ref="eventsRoot" class="vec-events__wrapper">
+  <div ref="eventsRoot" class="vec-events">
     <vec-default-time-component />
-    <div class="vec-events">
-      <vec-event-component
-        v-for="event in events"
-        :key="`es-id-${event.es_id}`"
-        :event="event"
-        :saveEventFn="saveEventFn"
-        :editEventFn="editEventFn"
-        :removeEventFn="removeEventFn"
-        :eventComponent="eventComponent"
-      />
-    </div>
+    <vec-event-component
+      v-for="event in events"
+      :key="`es-id-${event.es_id}`"
+      :event="event"
+      :saveEventFn="saveEventFn"
+      :editEventFn="editEventFn"
+      :removeEventFn="removeEventFn"
+      :eventComponent="eventComponent"
+    />
   </div>
 </template>
 <script lang="ts">

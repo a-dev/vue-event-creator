@@ -1,9 +1,10 @@
 # Vue Event Creator specification
 
-Status: the contract for `vue-event-creator` 2.0, implemented in this
+Status: the contract for `vue-event-creator` 2.1, implemented in this
 repository. Version 1.0.4 was the migration baseline, not a compatibility
 requirement; intentional breaking changes are listed in `CHANGELOG.md` and
-`MIGRATION.md`.
+`MIGRATION.md`. Version 2.1 refreshed the visual design without changing the
+props, callbacks, event model, locale keys, or package entry points below.
 
 ## Purpose
 
@@ -133,9 +134,22 @@ existing instance without requiring it to be remounted.
 The package ships one explicit CSS entry point. Consumers may override the CSS
 custom properties declared in `src/styles/vars.css`, scoped under `.vec-body`.
 
-The desktop layout shows the calendar and event list as two columns. A compact
-layout provides a switcher between them. Interactive dates, switches, and
-actions must be keyboard operable and expose accessible names and state.
+At 768px and above the calendar and event list are two columns, with the
+calendar sticky beside the list. Below that the calendar is a disclosure: a
+labeled toggle button expands it inline above the events, so it never covers an
+open event editor. A collapsed calendar is removed from the accessible tree and
+the tab order, and the toggle owns it through `aria-controls` and reports
+`aria-expanded`. Interactive dates, the toggle, and actions must be keyboard
+operable and expose accessible names and state.
+
+Panel and control corners are drawn with `corner-shape` where the browser
+supports it, and fall back to an area-matched `border-radius` elsewhere; both
+paths are supported output, not a degraded mode. `--vec-radius-panel` and
+`--vec-radius-control` configure the two shapes.
+
+Palette variable names are part of the public surface and are renamed only in a
+major release. The sole exception was `--vec-color-tertiaty`, corrected to
+`--vec-color-tertiary` in 2.1 within a day of its 2.0 publication.
 
 ## Architecture
 

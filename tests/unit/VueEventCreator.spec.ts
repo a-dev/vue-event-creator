@@ -205,6 +205,7 @@ describe('Load components', () => {
     });
     await flushPromises();
 
+    await wrapper.get('.vec-calendar__switcher').trigger('click');
     const day = wrapper.findAll('.vec-day')[14];
     expect(day.element.tagName).toBe('BUTTON');
     expect(day.attributes('aria-label')).toBe('2021-07-15');
@@ -281,6 +282,7 @@ describe('Load components', () => {
     });
     await flushPromises();
 
+    await wrapper.get('.vec-calendar__switcher').trigger('click');
     (wrapper.findAll('.vec-day')[14].element as HTMLElement).focus();
     await userEvent.keyboard('{Enter}');
     await vi.waitFor(() => {

@@ -32,7 +32,7 @@ column and stays a draft until you save it.
 | ---------------- | ------------------------------------------------------------------ |
 | Module format    | ESM only. No CommonJS, UMD, or `<script>` build is published.       |
 | Node.js          | 24.0 or newer (`engines.node`), for bundlers and tooling.           |
-| Vue              | `^3.x` as a peer dependency; developed against 3.5.                 |
+| Vue              | `^3.5.0` as a peer dependency; developed against 3.5.               |
 | Runtime deps     | Day.js only. Vue stays external.                                    |
 | Browsers         | Evergreen Chromium, Firefox, and WebKit. E2E runs on all three.     |
 | TypeScript       | Declarations resolve under `bundler`/`node16` ESM resolution.       |
@@ -279,6 +279,27 @@ Import the stylesheet once, then override the CSS custom properties on the
 
 The full list of variables is in
 [src/styles/vars.css](https://github.com/a-dev/vue-event-creator/blob/main/src/styles/vars.css).
+
+Panels and controls use `corner-shape: squircle` where supported, with an
+area-matched circular `border-radius` fallback based on the
+[corner-shape generator](https://a-dev.github.io/probes/corner-shape/).
+Customize `--vec-radius-panel` (28px) and `--vec-radius-control` (16px) to adjust
+the panel and control shapes; set both to `0px` for square corners on those
+elements. Calendar days use a separate, nearly circular `superellipse(1.25)`
+shape with a 50% radius and an area-matched circular fallback.
+
+Palette values are unchanged. One name changed in 2.1: the misspelled
+`--vec-color-tertiaty` from 2.0 is now `--vec-color-tertiary`. If you overrode
+the old name, update the spelling.
+
+Below 768px, the labeled calendar toggle expands an inline panel above the
+events. Collapsed dates are removed from keyboard navigation. Larger screens
+keep the calendar beside the event list. At desktop widths of 1024px and above,
+saved cards place their actions beside the dates to fit more events on screen;
+editing cards keep actions below the form. Time fields and action buttons have
+44px minimum heights, and keyboard focus has a visible outline.
+The event editor's default-time button aligns to the right when its time-controls
+row has at least 600px of content width, using a container query.
 
 ## Development
 
